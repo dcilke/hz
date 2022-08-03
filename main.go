@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"os"
 
@@ -11,10 +10,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+var writer = zerolog.NewConsoleWriter()
+
 type cmd struct{}
 
 func init() {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
 }
 
 func main() {
@@ -42,16 +43,27 @@ func main() {
 
 func process(file *os.File) {
 	reader := bufio.NewReader(file)
-	decoder := json.NewDecoder(reader)
-	writer := zerolog.NewConsoleWriter()
-	for decoder.More() {
-		var line interface{}
-		err := decoder.Decode(&line)
-		check(err, "unable to decode object")
-		data, err := json.Marshal(line)
-		check(err, "unable to marshal object")
-		_, err = writer.Write(data)
-		check(err, "unable to write object")
+
+	for {
+		b, err := reader.ReadBytes('\n')
+		if err != nil {
+			break
+		}
+		_, err = writer.Write(b)
+		if err != nil {
+			/**
+			TODO: handle "pretty printed" objects
+			"Better" json stream parser? The need is a parser which will handle
+			the json and output the invalid characters while skipping over them.
+			Read into buffer, classifying as valid or invalid json. Something
+			with an api like:
+
+			var obj interface{}
+			var str string
+			err := reader.Decode(&obj, &str)
+			**/
+			fmt.Print(string(b))
+		}
 	}
 }
 
