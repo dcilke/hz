@@ -6,17 +6,11 @@ import (
 	"os"
 
 	"github.com/jessevdk/go-flags"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
-var writer = zerolog.NewConsoleWriter()
+var writer = NewConsoleWriter()
 
 type cmd struct{}
-
-func init() {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
-}
 
 func main() {
 	var c cmd
@@ -51,24 +45,14 @@ func process(file *os.File) {
 		}
 		_, err = writer.Write(b)
 		if err != nil {
-			/**
-			TODO: handle "pretty printed" objects
-			"Better" json stream parser? The need is a parser which will handle
-			the json and output the invalid characters while skipping over them.
-			Read into buffer, classifying as valid or invalid json. Something
-			with an api like:
-
-			var obj interface{}
-			var str string
-			err := reader.Decode(&obj, &str)
-			**/
-			fmt.Print(string(b))
+			writer.Println(err)
 		}
 	}
 }
 
 func check(err error, hint string) {
 	if err != nil {
-		log.Fatal().Err(err).Msg(hint)
+		writer.Println(hint)
+		writer.Println(err)
 	}
 }
