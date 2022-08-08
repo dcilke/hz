@@ -13,4 +13,4 @@ require (
 	golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6 // indirect
 )
 
-replace github.com/dcilke/gojay v1.2.15 => ../gojay
+// replace github.com/dcilke/gojay v1.2.16 => ../gojay
