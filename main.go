@@ -8,7 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/francoispqt/gojay"
+	"github.com/dcilke/gojay"
 	"github.com/jessevdk/go-flags"
 )
 
