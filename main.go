@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,8 +16,7 @@ import (
 var writer = NewConsoleWriter()
 
 const (
-	bufSize = 1024
-	bufDump = bufSize / 2
+	bufDump = 512
 )
 
 type cmd struct{}
@@ -48,15 +48,14 @@ func process(file *os.File) {
 	reader := bufio.NewReader(file)
 	decoder := gojay.Stream.NewDecoder(reader)
 	decoder.UseNumber()
-	_buf := make([]byte, 0, bufSize)
+	_buf := make([]byte, 0, bufDump)
 	buf := bytes.NewBuffer(_buf)
 
 	c := make(chan os.Signal, 2)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
-		writer.Printf("%s", buf.String())
-		buf.Reset()
+		flush(buf)
 		os.Exit(0)
 	}()
 
@@ -64,22 +63,29 @@ func process(file *os.File) {
 		var msg any
 		err := decoder.Decode(&msg)
 		if err != nil {
-			b, _ := decoder.ReadByte()
+			b, err := decoder.ReadByte()
+			if err == io.EOF {
+				flush(buf)
+				return
+			}
 			buf.WriteByte(b)
-			if buf.Len() > bufDump || b == 10 {
-				writer.Printf("%s", buf.String())
-				buf.Reset()
+			if buf.Len() >= bufDump || b == 10 {
+				flush(buf)
 			}
 			continue
 		}
-		if buf.Len() > 0 {
-			writer.Printf("%s", buf.String())
-			buf.Reset()
-		}
+		flush(buf)
 		err = writer.WriteAny(msg)
 		if err != nil {
 			writer.Println(err)
 		}
+	}
+}
+
+func flush(buf *bytes.Buffer) {
+	if buf.Len() > 0 {
+		writer.Printf("%s", buf.String())
+		buf.Reset()
 	}
 }
 
