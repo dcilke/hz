@@ -14,4 +14,4 @@ require (
 )
 
 // Replace default gojay with github.com/dcilke/gojay fork for Decoder.ReadByte() goodness
-replace github.com/francoispqt/gojay v1.2.13 => ../gojay
+replace github.com/francoispqt/gojay v1.2.13 => github.com/dcilke/gojay v1.2.14
