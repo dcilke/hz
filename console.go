@@ -126,6 +126,21 @@ func NewConsoleWriter(options ...func(w *ConsoleWriter)) ConsoleWriter {
 	return w
 }
 
+func (w ConsoleWriter) Print(a ...any) (err error) {
+	var buf = consoleBufPool.Get().(*bytes.Buffer)
+	defer func() {
+		buf.Reset()
+		consoleBufPool.Put(buf)
+	}()
+
+	_, err = fmt.Fprint(buf, a...)
+	if err != nil {
+		return err
+	}
+	_, err = buf.WriteTo(w.out)
+	return err
+}
+
 func (w ConsoleWriter) Printf(format string, a ...any) (err error) {
 	var buf = consoleBufPool.Get().(*bytes.Buffer)
 	defer func() {
@@ -176,7 +191,7 @@ func (w ConsoleWriter) WriteAny(a any) (err error) {
 	if m, ok := a.(map[string]any); ok {
 		return w.writeMap(m)
 	}
-	return w.Println(a)
+	return w.Print(a)
 }
 
 func (w ConsoleWriter) writeMap(a map[string]any) (err error) {

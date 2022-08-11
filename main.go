@@ -3,13 +3,15 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"os/signal"
+	"reflect"
 	"syscall"
 
-	"github.com/dcilke/gojay"
+	"github.com/dcilke/goj"
 	"github.com/jessevdk/go-flags"
 )
 
@@ -46,7 +48,7 @@ func main() {
 
 func process(file *os.File) {
 	reader := bufio.NewReader(file)
-	decoder := gojay.Stream.NewDecoder(reader)
+	decoder := goj.NewDecoder(reader)
 	decoder.UseNumber()
 	_buf := make([]byte, 0, bufDump)
 	buf := bytes.NewBuffer(_buf)
@@ -61,23 +63,39 @@ func process(file *os.File) {
 
 	for {
 		var msg any
-		err := decoder.Decode(&msg)
-		if err != nil {
-			b, err := decoder.ReadByte()
-			if err == io.EOF {
-				flush(buf)
-				return
+		_ = decoder.Decode(&msg)
+		t := reflect.TypeOf(msg)
+		if t != nil {
+			switch t.Kind() {
+			case reflect.Map, reflect.Array, reflect.Slice:
+				flushln(buf)
+				err := writer.WriteAny(msg)
+				if err != nil {
+					writer.Println(err)
+				}
+				continue
+			case reflect.String:
+				for _, b := range []byte(msg.(json.Number)) {
+					buf.WriteByte(b)
+				}
+				continue
+			default:
+				writer.Println(t.Kind())
 			}
-			buf.WriteByte(b)
-			if buf.Len() >= bufDump || b == 10 {
-				flush(buf)
-			}
+		}
+		b, err := decoder.ReadByte()
+		if err == io.EOF {
+			flush(buf)
+			return
+		}
+		// encoding/json will skip space characters at the beginning of objects
+		// minic that behaviour
+		if buf.Len() == 0 && isSpace(b) {
 			continue
 		}
-		flush(buf)
-		err = writer.WriteAny(msg)
-		if err != nil {
-			writer.Println(err)
+		buf.WriteByte(b)
+		if buf.Len() >= bufDump || b == 10 {
+			flush(buf)
 		}
 	}
 }
@@ -89,9 +107,20 @@ func flush(buf *bytes.Buffer) {
 	}
 }
 
+func flushln(buf *bytes.Buffer) {
+	if buf.Len() > 0 {
+		writer.Printf("%s\n", buf.String())
+		buf.Reset()
+	}
+}
+
 func check(err error, hint string) {
 	if err != nil {
 		writer.Println(hint)
 		writer.Println(err)
 	}
+}
+
+func isSpace(c byte) bool {
+	return c <= ' ' && (c == ' ' || c == '\t' || c == '\r' || c == '\n')
 }
