@@ -3,10 +3,9 @@ module github.com/dcilke/hz
 go 1.18
 
 require (
-	github.com/dcilke/goj v0.0.2
+	github.com/dcilke/goj v0.0.4
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/mattn/go-colorable v0.1.12
-	github.com/sanity-io/litter v1.5.5
 )
 
 require (

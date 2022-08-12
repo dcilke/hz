@@ -62,36 +62,35 @@ func process(file *os.File) {
 	}()
 
 	for {
-		var msg any
-		_ = decoder.Decode(&msg)
-		t := reflect.TypeOf(msg)
-		if t != nil {
-			switch t.Kind() {
-			case reflect.Map, reflect.Array, reflect.Slice:
-				flushln(buf)
-				err := writer.WriteAny(msg)
-				if err != nil {
-					writer.Println(err)
+		// we will only pretty print objects, so if the current character is not { or [, process as byte stream
+		if c, _ := decoder.Peek(); goj.IsBegin(c) {
+			var msg any
+			_ = decoder.Decode(&msg)
+			t := reflect.TypeOf(msg)
+			if t != nil {
+				switch t.Kind() {
+				case reflect.Map, reflect.Array, reflect.Slice:
+					flush(buf)
+					err := writer.WriteAny(msg)
+					if err != nil {
+						writer.Println(err)
+					}
+					continue
+				case reflect.String: // json.Number
+					for _, b := range []byte(msg.(json.Number)) {
+						buf.WriteByte(b)
+					}
+					continue
+				default:
+					writer.Println(fmt.Sprintf("[hz] internal error, unexpected decoded line type %q", t.Kind()))
 				}
-				continue
-			case reflect.String:
-				for _, b := range []byte(msg.(json.Number)) {
-					buf.WriteByte(b)
-				}
-				continue
-			default:
-				writer.Println(t.Kind())
 			}
 		}
+
 		b, err := decoder.ReadByte()
 		if err == io.EOF {
 			flush(buf)
 			return
-		}
-		// encoding/json will skip space characters at the beginning of objects
-		// minic that behaviour
-		if buf.Len() == 0 && isSpace(b) {
-			continue
 		}
 		buf.WriteByte(b)
 		if buf.Len() >= bufDump || b == 10 {
@@ -103,13 +102,6 @@ func process(file *os.File) {
 func flush(buf *bytes.Buffer) {
 	if buf.Len() > 0 {
 		writer.Printf("%s", buf.String())
-		buf.Reset()
-	}
-}
-
-func flushln(buf *bytes.Buffer) {
-	if buf.Len() > 0 {
-		writer.Printf("%s\n", buf.String())
 		buf.Reset()
 	}
 }

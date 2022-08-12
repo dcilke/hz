@@ -206,11 +206,6 @@ func (w ConsoleWriter) writeMap(a map[string]any) (err error) {
 	}
 
 	w.writeFields(a, buf)
-
-	err = buf.WriteByte('\n')
-	if err != nil {
-		return err
-	}
 	_, err = buf.WriteTo(w.out)
 	return err
 }
