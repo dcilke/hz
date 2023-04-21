@@ -112,7 +112,3 @@ func check(err error, hint string) {
 		writer.Println(err)
 	}
 }
-
-func isSpace(c byte) bool {
-	return c <= ' ' && (c == ' ' || c == '\t' || c == '\r' || c == '\n')
-}
