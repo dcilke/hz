@@ -46,13 +46,16 @@ const (
 	LevelFatalNum = 60
 	LevelPanicNum = 100
 
-	FieldNameTimestamp = "time"
-	FieldNameLevel     = "level"
-	FieldNameMessage   = "message"
-	FieldNameError     = "error"
-	FieldNameCaller    = "caller"
-	FieldNameStack     = "stack"
-	FieldNameLog       = "log"
+	FieldNameTime        = "time"
+	FieldNameTimestamp   = "timestamp"
+	FieldNameAtTimestamp = "@timestamp"
+	FieldNameLevel       = "level"
+	FieldNameMessage     = "message"
+	FieldNameError       = "error"
+	FieldNameErr         = "err"
+	FieldNameCaller      = "caller"
+	FieldNameStack       = "stack"
+	FieldNameLog         = "log"
 
 	TimeFieldFormat     = time.RFC3339
 	TimeFormatUnixMs    = "UNIXMS"
@@ -226,7 +229,13 @@ func (w ConsoleWriter) writeFields(evt map[string]any, buf *bytes.Buffer) {
 		}
 
 		switch field {
-		case FieldNameLog, FieldNameLevel, FieldNameTimestamp, FieldNameMessage, FieldNameCaller:
+		case FieldNameLog,
+			FieldNameLevel,
+			FieldNameTime,
+			FieldNameTimestamp,
+			FieldNameAtTimestamp,
+			FieldNameMessage,
+			FieldNameCaller:
 			continue
 		}
 		fields = append(fields, field)
@@ -239,10 +248,13 @@ func (w ConsoleWriter) writeFields(evt map[string]any, buf *bytes.Buffer) {
 	}
 
 	// Move the "error" field to the front
-	ei := sort.Search(len(fields), func(i int) bool { return fields[i] >= FieldNameError })
-	if ei < len(fields) && fields[ei] == FieldNameError {
+	ei := sort.Search(len(fields), func(i int) bool {
+		return (fields[i] >= FieldNameError || fields[i] == FieldNameErr)
+	})
+	if ei < len(fields) && (fields[ei] == FieldNameError || fields[ei] == FieldNameErr) {
+		field := fields[ei]
 		fields[ei] = ""
-		fields = append([]string{FieldNameError}, fields...)
+		fields = append([]string{field}, fields...)
 		var xfields = make([]string, 0, len(fields))
 		for _, field := range fields {
 			if field == "" { // Skip empty fields
@@ -257,7 +269,9 @@ func (w ConsoleWriter) writeFields(evt map[string]any, buf *bytes.Buffer) {
 		var fn Formatter
 		var fv Formatter
 
-		if field == FieldNameError || field == FieldNameStack {
+		if field == FieldNameError ||
+			field == FieldNameErr ||
+			field == FieldNameStack {
 			if w.formatErrFieldName == nil {
 				fn = consoleDefaultFormatErrFieldName(w.noColor)
 			} else {
@@ -334,7 +348,7 @@ func (w ConsoleWriter) writePart(buf *bytes.Buffer, evt map[string]any, p string
 		} else {
 			f = w.formatLog
 		}
-	case FieldNameTimestamp:
+	case FieldNameTime, FieldNameTimestamp, FieldNameAtTimestamp:
 		if w.formatTimestamp == nil {
 			f = consoleDefaultFormatTimestamp(w.timeFormat, w.noColor)
 		} else {
@@ -360,7 +374,11 @@ func (w ConsoleWriter) writePart(buf *bytes.Buffer, evt map[string]any, p string
 		}
 	}
 
-	var s = f(evt[p])
+	v, ok := evt[p]
+	if !ok {
+		return
+	}
+	var s = f(v)
 
 	if len(s) > 0 {
 		if buf.Len() > 0 {
@@ -392,7 +410,9 @@ func colorize(s any, c int, disabled bool) string {
 
 func consoleDefaultPartsOrder() []string {
 	return []string{
+		FieldNameTime,
 		FieldNameTimestamp,
+		FieldNameAtTimestamp,
 		FieldNameLevel,
 		FieldNameLog,
 		FieldNameCaller,
