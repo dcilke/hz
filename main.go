@@ -11,7 +11,8 @@ import (
 )
 
 type Cmd struct {
-	Strict bool `short:"s" long:"strict" description:"strict mode"`
+	Strict bool     `short:"s" long:"strict" description:"strict mode"`
+	Level  []string `short:"l" long:"level" description:"only output lines at this level"`
 }
 
 func main() {
@@ -27,7 +28,7 @@ func main() {
 		fmt.Fprint(os.Stderr, fmt.Errorf("unable to parse arguments: %w", err))
 	}
 
-	p := processor.New(writer.New(), processor.WithStrict(cmd.Strict))
+	p := processor.New(writer.New(writer.WithLevelFilters(cmd.Level)), processor.WithStrict(cmd.Strict))
 
 	terminator.OnSig(func() int {
 		p.Flush()

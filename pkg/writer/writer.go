@@ -72,13 +72,19 @@ type Writer struct {
 	// pinOrder defines the order of set keys in output.
 	pinOrder []string
 
+	// includeLevels defines the log levels to include in output.
+	includeLevels []string
+
 	// excludeKeys defines contextual keys to not display in output.
 	excludeKeys []string
 
+	// formatter defines a map of formatters for pins.
 	formatter map[string]Formatter
 
+	// extractor defines the default field formatter.
 	extractor Extractor
 
+	// formatKey defines the default key formatter.
 	formatKey Stringer
 }
 
@@ -139,6 +145,18 @@ func WithExcludeKeys(keys []string) Option {
 func WithKeyFormatter(f Stringer) Option {
 	return func(w *Writer) {
 		w.formatKey = f
+	}
+}
+
+func WithLevelFilter(s string) Option {
+	return func(w *Writer) {
+		w.includeLevels = append(w.includeLevels, s)
+	}
+}
+
+func WithLevelFilters(s []string) Option {
+	return func(w *Writer) {
+		w.includeLevels = append(w.includeLevels, s...)
 	}
 }
 
@@ -264,6 +282,15 @@ func (w Writer) writeMap(a map[string]any) (int, error) {
 		bufPool.Put(buf)
 	}()
 
+	if len(w.includeLevels) > 0 {
+		levels := getLevels(a)
+		for _, l := range levels {
+			if !includes(w.includeLevels, l) {
+				return 0, nil
+			}
+		}
+	}
+
 	for _, p := range w.pinOrder {
 		w.writePinned(buf, a, p)
 	}
@@ -319,6 +346,7 @@ func formatKey(noColor bool) Stringer {
 		return colorize(fmt.Sprintf("%s=", i), ColorCyan, noColor)
 	}
 }
+
 func extractor(noColor bool, fn Stringer) Extractor {
 	return func(m map[string]any, k string) string {
 		ret := fn(k)

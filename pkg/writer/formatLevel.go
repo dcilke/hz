@@ -3,7 +3,6 @@ package writer
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 )
 
 const (
@@ -51,28 +50,18 @@ func newLevelFormatter(noColor bool, formatKey Stringer) Formatter {
 }
 
 func (f *levelFormatter) Format(m map[string]any, _ string) string {
-	var level string
-	var loglevel string
-	if i, ok := m[KeyLevel]; ok {
-		level = f.getLevel(i)
-	}
-	if log, ok := m[KeyLog]; ok {
-		if obj, ok := log.(map[string]any); ok {
-			if l, ok := obj[KeyLevel]; ok {
-				loglevel = f.getLevel(l)
-			}
-		}
-	}
-	if ok, value := sameOrEmpty(level, loglevel); ok {
+	levels := getLevels(m)
+
+	if ok, value := sameOrEmpty(levels[KeyLevel], levels[KeyLog]); ok {
 		if value == "" {
 			return ""
 		}
-		return value
+		return f.format(value)
 	}
 
 	return kvJoin(
-		f.formatKey(KeyLevel), level,
-		f.formatKey(fmt.Sprintf("%s.%s", KeyLog, KeyLevel)), loglevel,
+		f.formatKey(KeyLevel), f.format(levels[KeyLevel]),
+		f.formatKey(fmt.Sprintf("%s.%s", KeyLog, KeyLevel)), f.format(levels[KeyLog]),
 	)
 }
 
@@ -80,26 +69,7 @@ func (f *levelFormatter) ExcludeKeys() []string {
 	return f.keys
 }
 
-func (f *levelFormatter) getLevel(i any) string {
-	if i == nil {
-		return ""
-	}
-	if l, ok := i.(string); ok {
-		return f.formatStrAsLevelString(l)
-	}
-	if n, ok := i.(json.Number); ok {
-		if l, err := n.Int64(); err == nil {
-			return f.formatNumAsLevelString(l)
-		}
-	}
-	l := strings.ToUpper(fmt.Sprintf("%s", i))
-	if len(l) > 3 {
-		l = l[0:3]
-	}
-	return l
-}
-
-func (f *levelFormatter) formatStrAsLevelString(l string) string {
+func (f *levelFormatter) format(l string) string {
 	switch l {
 	case LevelPanicStr:
 		return boldrize(DefaultLevelPanicValue, ColorRed, f.noColor)
@@ -120,27 +90,67 @@ func (f *levelFormatter) formatStrAsLevelString(l string) string {
 	}
 }
 
-func (f levelFormatter) formatNumAsLevelString(l int64) string {
-	if l >= LevelPanicNum {
-		return boldrize(DefaultLevelPanicValue, ColorRed, f.noColor)
+func getLevels(m map[string]any) map[string]string {
+	levels := make(map[string]string, 2)
+	if i, ok := m[KeyLevel]; ok {
+		levels[KeyLevel] = getLevel(i)
 	}
-	if l >= LevelFatalNum {
-		return boldrize(DefaultLevelFatalValue, ColorRed, f.noColor)
+	if log, ok := m[KeyLog]; ok {
+		if obj, ok := log.(map[string]any); ok {
+			if l, ok := obj[KeyLevel]; ok {
+				levels[KeyLog] = getLevel(l)
+			}
+		}
 	}
-	if l >= LevelErrorNum {
-		return boldrize(DefaultLevelErrorValue, ColorRed, f.noColor)
+	return levels
+}
+
+func getLevel(i any) string {
+	if i == nil {
+		return ""
 	}
-	if l >= LevelWarnNum {
-		return colorize(DefaultLevelWarnValue, ColorRed, f.noColor)
+
+	if l, ok := i.(string); ok {
+		switch l {
+		case LevelPanicStr:
+			return LevelPanicStr
+		case LevelFatalStr:
+			return LevelFatalStr
+		case LevelErrorStr:
+			return LevelErrorStr
+		case LevelWarnStr:
+			return LevelWarnStr
+		case LevelInfoStr:
+			return LevelInfoStr
+		case LevelDebugStr:
+			return LevelDebugStr
+		case LevelTraceStr:
+			return LevelTraceStr
+		}
+	} else if n, ok := i.(json.Number); ok {
+		if l, err := n.Int64(); err == nil {
+			if l >= LevelPanicNum {
+				return LevelPanicStr
+			}
+			if l >= LevelFatalNum {
+				return LevelFatalStr
+			}
+			if l >= LevelErrorNum {
+				return LevelErrorStr
+			}
+			if l >= LevelWarnNum {
+				return LevelWarnStr
+			}
+			if l >= LevelInfoNum {
+				return LevelInfoStr
+			}
+			if l >= LevelDebugNum {
+				return LevelDebugStr
+			}
+			if l >= LevelTraceNum {
+				return LevelTraceStr
+			}
+		}
 	}
-	if l >= LevelInfoNum {
-		return colorize(DefaultLevelInfoValue, ColorGreen, f.noColor)
-	}
-	if l >= LevelDebugNum {
-		return colorize(DefaultLevelDebugValue, ColorYellow, f.noColor)
-	}
-	if l >= LevelTraceNum {
-		return colorize(DefaultLevelTraceValue, ColorMagenta, f.noColor)
-	}
-	return colorize(DefaultLevelValue, ColorBold, f.noColor)
+	return fmt.Sprintf("%s", i)
 }

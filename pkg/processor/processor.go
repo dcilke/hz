@@ -68,46 +68,62 @@ func (p *Processor) Process(file *os.File) {
 	for {
 		// we will only pretty print objects, so if the current character is not { or [, process as byte stream
 		if c, _ := decoder.Peek(); goj.IsBegin(c) {
+			var err error
 			var msg any
 			_ = decoder.Decode(&msg)
-			t := reflect.TypeOf(msg)
-			if t != nil {
-				switch t.Kind() {
-				case reflect.Map, reflect.Array, reflect.Slice:
-					p.Flush()
-					_, err := p.writer.WriteAny(msg)
-					if err != nil {
-						_, _ = p.writer.Error(err)
-					}
-					continue
-				case reflect.String: // json.Number
-					for _, b := range []byte(msg.(json.Number)) {
-						p.push(b)
-					}
-					continue
-				default:
-					_, _ = p.writer.Error(fmt.Errorf("unexpected decoded line type %q", t.Kind()))
+			if msg == nil {
+				_ = p.processByte(decoder)
+				continue
+			}
+
+			l := 0
+			switch k := reflect.TypeOf(msg).Kind(); k {
+			case reflect.Map, reflect.Array, reflect.Slice:
+				p.Flush()
+				l, err = p.writer.WriteAny(msg)
+				if err != nil {
+					_, _ = p.writer.Error(err)
+				}
+			case reflect.String: // json.Number
+				m := []byte(msg.(json.Number))
+				for _, b := range m {
+					p.push(b)
+				}
+				l = len(m)
+			default:
+				_, _ = p.writer.Error(fmt.Errorf("unexpected decoded line type %q", k))
+			}
+
+			if n, _ := decoder.Peek(); n == newline {
+				b, _ := decoder.ReadByte()
+				if l > 0 {
+					p.push(b)
 				}
 			}
-		}
-
-		b, err := decoder.ReadByte()
-		if err == io.EOF {
-			p.Flush()
+		} else if err := p.processByte(decoder); err == io.EOF {
 			return
-		}
-
-		p.push(b)
-		if p.buf.Len() >= p.bufSize || b == newline {
-			p.Flush()
 		}
 	}
 }
 
-func (p *Processor) push(b byte) {
-	if !p.strict {
-		p.buf.WriteByte(b)
+func (p *Processor) processByte(decoder *goj.Decoder) error {
+	b, err := decoder.ReadByte()
+	if err == io.EOF {
+		p.Flush()
+		return err
 	}
+
+	if !p.strict {
+		p.push(b)
+	}
+	if p.buf.Len() >= p.bufSize {
+		p.Flush()
+	}
+	return nil
+}
+
+func (p *Processor) push(b byte) {
+	p.buf.WriteByte(b)
 }
 
 func (p *Processor) Flush() {
