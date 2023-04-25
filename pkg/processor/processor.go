@@ -28,6 +28,7 @@ type Processor struct {
 	writer  writer
 	buf     *bytes.Buffer
 	bufSize int
+	strict  bool
 }
 
 type Option func(*Processor)
@@ -35,6 +36,12 @@ type Option func(*Processor)
 func WithBufSize(size int) Option {
 	return func(p *Processor) {
 		p.buf = bytes.NewBuffer(make([]byte, 0, size))
+	}
+}
+
+func WithStrict(s bool) Option {
+	return func(p *Processor) {
+		p.strict = s
 	}
 }
 
@@ -98,7 +105,9 @@ func (p *Processor) Process(file *os.File) {
 }
 
 func (p *Processor) push(b byte) {
-	p.buf.WriteByte(b)
+	if !p.strict {
+		p.buf.WriteByte(b)
+	}
 }
 
 func (p *Processor) Flush() {

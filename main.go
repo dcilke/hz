@@ -10,7 +10,9 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
-type Cmd struct{}
+type Cmd struct {
+	Strict bool `short:"s" long:"strict" description:"strict mode"`
+}
 
 func main() {
 	var cmd Cmd
@@ -25,7 +27,7 @@ func main() {
 		fmt.Fprint(os.Stderr, fmt.Errorf("unable to parse arguments: %w", err))
 	}
 
-	p := processor.New(writer.New())
+	p := processor.New(writer.New(), processor.WithStrict(cmd.Strict))
 
 	terminator.OnSig(func() int {
 		p.Flush()
