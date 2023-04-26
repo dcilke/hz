@@ -1,8 +1,10 @@
-package writer
+package formatter
 
 import (
 	"encoding/json"
 	"time"
+
+	"github.com/dcilke/hz/pkg/g"
 )
 
 const (
@@ -17,15 +19,17 @@ const (
 	DefaultTimeValue = "<nil>"
 )
 
-type timestampFormatter struct {
+var _ Formatter = (*Timestamp)(nil)
+
+type Timestamp struct {
 	noColor    bool
 	formatKey  Stringer
 	timeFormat string
 	keys       []string
 }
 
-func newTimestampFormatter(noColor bool, formatKeys Stringer, timeFormat string) Formatter {
-	return &timestampFormatter{
+func NewTimestamp(noColor bool, formatKeys Stringer, timeFormat string) Formatter {
+	return &Timestamp{
 		noColor:    noColor,
 		formatKey:  formatKeys,
 		timeFormat: timeFormat,
@@ -33,7 +37,7 @@ func newTimestampFormatter(noColor bool, formatKeys Stringer, timeFormat string)
 	}
 }
 
-func (f *timestampFormatter) Format(m map[string]any, _ string) string {
+func (f *Timestamp) Format(m map[string]any, _ string) string {
 	var timestamp string
 	var attimestamp string
 	var time string
@@ -47,24 +51,24 @@ func (f *timestampFormatter) Format(m map[string]any, _ string) string {
 		attimestamp = f.getTime(i)
 	}
 
-	if ok, value := sameOrEmpty(timestamp, attimestamp, time); ok {
+	if ok, value := g.SameOrEmpty(timestamp, attimestamp, time); ok {
 		if value == "" {
-			return colorize(DefaultTimeValue, ColorDarkGray, f.noColor)
+			return Colorize(DefaultTimeValue, ColorDarkGray, f.noColor)
 		}
-		return colorize(value, ColorDarkGray, f.noColor)
+		return Colorize(value, ColorDarkGray, f.noColor)
 	}
 	return kvJoin(
-		f.formatKey(KeyTimestamp), colorize(timestamp, ColorDarkGray, f.noColor),
-		f.formatKey(KeyAtTimestamp), colorize(attimestamp, ColorDarkGray, f.noColor),
-		f.formatKey(KeyTime), colorize(time, ColorDarkGray, f.noColor),
+		f.formatKey(KeyTimestamp), Colorize(timestamp, ColorDarkGray, f.noColor),
+		f.formatKey(KeyAtTimestamp), Colorize(attimestamp, ColorDarkGray, f.noColor),
+		f.formatKey(KeyTime), Colorize(time, ColorDarkGray, f.noColor),
 	)
 }
 
-func (f *timestampFormatter) ExcludeKeys() []string {
+func (f *Timestamp) ExcludeKeys() []string {
 	return f.keys
 }
 
-func (f *timestampFormatter) getTime(i any) string {
+func (f *Timestamp) getTime(i any) string {
 	t := ""
 	switch tt := i.(type) {
 	case string:

@@ -1,4 +1,4 @@
-package writer
+package formatter
 
 import (
 	"os"
@@ -9,21 +9,23 @@ const (
 	KeyCaller = "caller"
 )
 
-type callerFormatter struct {
+var _ Formatter = (*Caller)(nil)
+
+type Caller struct {
 	noColor   bool
 	formatKey Stringer
 	keys      []string
 }
 
-func newCallerFormatter(noColor bool, formatKey Stringer) Formatter {
-	return &callerFormatter{
+func NewCaller(noColor bool, formatKey Stringer) Formatter {
+	return &Caller{
 		noColor:   noColor,
 		formatKey: formatKey,
 		keys:      []string{KeyCaller},
 	}
 }
 
-func (f *callerFormatter) Format(m map[string]any, _ string) string {
+func (f *Caller) Format(m map[string]any, _ string) string {
 	if i, ok := m[KeyCaller]; ok {
 		var c string
 		if cc, ok := i.(string); ok {
@@ -35,13 +37,13 @@ func (f *callerFormatter) Format(m map[string]any, _ string) string {
 					c = rel
 				}
 			}
-			c = colorize(c, ColorBold, f.noColor) + colorize(" >", ColorCyan, f.noColor)
+			c = Colorize(c, ColorBold, f.noColor) + Colorize(" >", ColorCyan, f.noColor)
 		}
 		return c
 	}
 	return ""
 }
 
-func (f *callerFormatter) ExcludeKeys() []string {
+func (f *Caller) ExcludeKeys() []string {
 	return f.keys
 }

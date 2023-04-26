@@ -1,8 +1,10 @@
-package writer
+package formatter
 
 import (
 	"fmt"
 	"strconv"
+
+	"github.com/dcilke/hz/pkg/g"
 )
 
 const (
@@ -10,21 +12,23 @@ const (
 	KeyErr   = "err"
 )
 
-type errorFormatter struct {
+var _ Formatter = (*Error)(nil)
+
+type Error struct {
 	noColor   bool
 	formatKey Stringer
 	keys      []string
 }
 
-func newErrorFormatter(noColor bool, formatKey Stringer) Formatter {
-	return &errorFormatter{
+func NewError(noColor bool, formatKey Stringer) Formatter {
+	return &Error{
 		noColor:   noColor,
 		formatKey: formatKey,
 		keys:      []string{KeyError, KeyErr},
 	}
 }
 
-func (f *errorFormatter) Format(m map[string]any, _ string) string {
+func (f *Error) Format(m map[string]any, _ string) string {
 	var ferr string
 	var ferror string
 	if i, ok := m[KeyError]; ok {
@@ -33,7 +37,7 @@ func (f *errorFormatter) Format(m map[string]any, _ string) string {
 	if i, ok := m[KeyErr]; ok {
 		ferr = f.formatValue(i)
 	}
-	if ok, value := sameOrEmpty(ferror, ferr); ok {
+	if ok, value := g.SameOrEmpty(ferror, ferr); ok {
 		if value == "" {
 			return ""
 		}
@@ -46,14 +50,14 @@ func (f *errorFormatter) Format(m map[string]any, _ string) string {
 	)
 }
 
-func (f *errorFormatter) ExcludeKeys() []string {
+func (f *Error) ExcludeKeys() []string {
 	return f.keys
 }
 
-func (f *errorFormatter) formatValue(i any) string {
+func (f *Error) formatValue(i any) string {
 	str, err := strconv.Unquote(fmt.Sprintf("%s", i))
 	if err != nil {
-		return colorize(fmt.Sprintf("%s", i), ColorRed, f.noColor)
+		return Colorize(fmt.Sprintf("%s", i), ColorRed, f.noColor)
 	}
-	return colorize(str, ColorRed, f.noColor)
+	return Colorize(str, ColorRed, f.noColor)
 }

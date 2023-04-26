@@ -1,27 +1,33 @@
-package writer
+package formatter
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/dcilke/hz/pkg/g"
+)
 
 const (
 	KeyMessage = "message"
 	KeyMsg     = "msg"
 )
 
-type messageFormatter struct {
+var _ Formatter = (*Message)(nil)
+
+type Message struct {
 	noColor   bool
 	formatKey Stringer
 	keys      []string
 }
 
-func newMessageFormatter(noColor bool, formatKey Stringer) Formatter {
-	return &messageFormatter{
+func NewMessage(noColor bool, formatKey Stringer) Formatter {
+	return &Message{
 		noColor:   noColor,
 		formatKey: formatKey,
 		keys:      []string{KeyMessage, KeyMsg},
 	}
 }
 
-func (f *messageFormatter) Format(m map[string]any, _ string) string {
+func (f *Message) Format(m map[string]any, _ string) string {
 	var message string
 	var msg string
 	if i, ok := m[KeyMessage]; ok {
@@ -31,7 +37,7 @@ func (f *messageFormatter) Format(m map[string]any, _ string) string {
 		msg = fmt.Sprintf("%s", i)
 	}
 
-	if ok, value := sameOrEmpty(message, msg); ok {
+	if ok, value := g.SameOrEmpty(message, msg); ok {
 		if value == "" {
 			return ""
 		}
@@ -43,6 +49,6 @@ func (f *messageFormatter) Format(m map[string]any, _ string) string {
 	)
 }
 
-func (f *messageFormatter) ExcludeKeys() []string {
+func (f *Message) ExcludeKeys() []string {
 	return f.keys
 }

@@ -1,8 +1,10 @@
-package writer
+package formatter
 
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/dcilke/hz/pkg/g"
 )
 
 const (
@@ -35,24 +37,26 @@ const (
 	DefaultLevelPanicValue = "PNC"
 )
 
-type levelFormatter struct {
+var _ Formatter = (*Level)(nil)
+
+type Level struct {
 	noColor   bool
 	formatKey Stringer
 	keys      []string
 }
 
-func newLevelFormatter(noColor bool, formatKey Stringer) Formatter {
-	return &levelFormatter{
+func NewLevel(noColor bool, formatKey Stringer) Formatter {
+	return &Level{
 		noColor:   noColor,
 		formatKey: formatKey,
 		keys:      []string{KeyLevel, KeyLog},
 	}
 }
 
-func (f *levelFormatter) Format(m map[string]any, _ string) string {
-	levels := getLevels(m)
+func (f *Level) Format(m map[string]any, _ string) string {
+	levels := GetLevels(m)
 
-	if ok, value := sameOrEmpty(levels[KeyLevel], levels[KeyLog]); ok {
+	if ok, value := g.SameOrEmpty(levels[KeyLevel], levels[KeyLog]); ok {
 		if value == "" {
 			return ""
 		}
@@ -65,32 +69,32 @@ func (f *levelFormatter) Format(m map[string]any, _ string) string {
 	)
 }
 
-func (f *levelFormatter) ExcludeKeys() []string {
+func (f *Level) ExcludeKeys() []string {
 	return f.keys
 }
 
-func (f *levelFormatter) format(l string) string {
+func (f *Level) format(l string) string {
 	switch l {
 	case LevelPanicStr:
-		return boldrize(DefaultLevelPanicValue, ColorRed, f.noColor)
+		return Boldrize(DefaultLevelPanicValue, ColorRed, f.noColor)
 	case LevelFatalStr:
-		return boldrize(DefaultLevelFatalValue, ColorRed, f.noColor)
+		return Boldrize(DefaultLevelFatalValue, ColorRed, f.noColor)
 	case LevelErrorStr:
-		return boldrize(DefaultLevelErrorValue, ColorRed, f.noColor)
+		return Boldrize(DefaultLevelErrorValue, ColorRed, f.noColor)
 	case LevelWarnStr:
-		return colorize(DefaultLevelWarnValue, ColorRed, f.noColor)
+		return Colorize(DefaultLevelWarnValue, ColorRed, f.noColor)
 	case LevelInfoStr:
-		return colorize(DefaultLevelInfoValue, ColorGreen, f.noColor)
+		return Colorize(DefaultLevelInfoValue, ColorGreen, f.noColor)
 	case LevelDebugStr:
-		return colorize(DefaultLevelDebugValue, ColorYellow, f.noColor)
+		return Colorize(DefaultLevelDebugValue, ColorYellow, f.noColor)
 	case LevelTraceStr:
-		return colorize(DefaultLevelTraceValue, ColorMagenta, f.noColor)
+		return Colorize(DefaultLevelTraceValue, ColorMagenta, f.noColor)
 	default:
-		return colorize(DefaultLevelValue, ColorBold, f.noColor)
+		return Colorize(DefaultLevelValue, ColorBold, f.noColor)
 	}
 }
 
-func getLevels(m map[string]any) map[string]string {
+func GetLevels(m map[string]any) map[string]string {
 	levels := make(map[string]string, 2)
 	if i, ok := m[KeyLevel]; ok {
 		levels[KeyLevel] = getLevel(i)

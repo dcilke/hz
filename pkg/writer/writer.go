@@ -7,9 +7,10 @@ import (
 	"io"
 	"os"
 	"sort"
-	"strconv"
 	"sync"
 
+	"github.com/dcilke/hz/pkg/formatter"
+	"github.com/dcilke/hz/pkg/g"
 	"github.com/mattn/go-colorable"
 )
 
@@ -42,18 +43,6 @@ var (
 	}
 )
 
-// Formatter defines a formatter for a specific pin key
-type Formatter interface {
-	Format(map[string]any, string) string
-	ExcludeKeys() []string
-}
-
-// Extractor extracts multiple values and formats them
-type Extractor func(map[string]any, string) string
-
-// Stringer stringifies a value
-type Stringer func(any) string
-
 // Writer parses the JSON input and writes it in an
 // (optionally) colorized, human-friendly format to Out.
 type Writer struct {
@@ -79,13 +68,13 @@ type Writer struct {
 	excludeKeys []string
 
 	// formatter defines a map of formatters for pins.
-	formatter map[string]Formatter
+	formatter map[string]formatter.Formatter
 
 	// extractor defines the default field formatter.
-	extractor Extractor
+	extractor formatter.Extractor
 
 	// formatKey defines the default key formatter.
-	formatKey Stringer
+	formatKey formatter.Stringer
 }
 
 type Option func(w *Writer)
@@ -118,7 +107,7 @@ func WithTimeFormat(timeFormat string) Option {
 	}
 }
 
-func WithFormatter(key string, f Formatter) Option {
+func WithFormatter(key string, f formatter.Formatter) Option {
 	return func(w *Writer) {
 		w.formatter[key] = f
 	}
@@ -130,7 +119,7 @@ func WithPinOrder(order []string) Option {
 	}
 }
 
-func WithExtractor(f Extractor) Option {
+func WithExtractor(f formatter.Extractor) Option {
 	return func(w *Writer) {
 		w.extractor = f
 	}
@@ -142,7 +131,7 @@ func WithExcludeKeys(keys []string) Option {
 	}
 }
 
-func WithKeyFormatter(f Stringer) Option {
+func WithKeyFormatter(f formatter.Stringer) Option {
 	return func(w *Writer) {
 		w.formatKey = f
 	}
@@ -168,7 +157,7 @@ func New(options ...Option) Writer {
 		timeFormat:  defaultTimeFormat,
 		pinOrder:    defaultPinOrder,
 		excludeKeys: make([]string, 0, 10),
-		formatter:   make(map[string]Formatter, 6),
+		formatter:   make(map[string]formatter.Formatter, 6),
 	}
 
 	for _, opt := range options {
@@ -186,29 +175,29 @@ func New(options ...Option) Writer {
 
 	// Set default key formatter
 	if w.formatKey == nil {
-		w.formatKey = formatKey(w.noColor)
+		w.formatKey = formatter.Key(w.noColor)
 	}
 
 	// Ensure default formatters, if not specified in input
 	if _, ok := w.formatter[PinTimestamp]; !ok {
-		w.formatter[PinTimestamp] = newTimestampFormatter(w.noColor, w.formatKey, w.timeFormat)
+		w.formatter[PinTimestamp] = formatter.NewTimestamp(w.noColor, w.formatKey, w.timeFormat)
 	}
 	if _, ok := w.formatter[PinLevel]; !ok {
-		w.formatter[PinLevel] = newLevelFormatter(w.noColor, w.formatKey)
+		w.formatter[PinLevel] = formatter.NewLevel(w.noColor, w.formatKey)
 	}
 	if _, ok := w.formatter[PinMessage]; !ok {
-		w.formatter[PinMessage] = newMessageFormatter(w.noColor, w.formatKey)
+		w.formatter[PinMessage] = formatter.NewMessage(w.noColor, w.formatKey)
 	}
 	if _, ok := w.formatter[PinCaller]; !ok {
-		w.formatter[PinCaller] = newCallerFormatter(w.noColor, w.formatKey)
+		w.formatter[PinCaller] = formatter.NewCaller(w.noColor, w.formatKey)
 	}
 	if _, ok := w.formatter[PinError]; !ok {
-		w.formatter[PinError] = newErrorFormatter(w.noColor, w.formatKey)
+		w.formatter[PinError] = formatter.NewError(w.noColor, w.formatKey)
 	}
 
 	// Ensure default extractor
 	if w.extractor == nil {
-		w.extractor = extractor(w.noColor, w.formatKey)
+		w.extractor = formatter.Map(w.noColor, w.formatKey)
 	}
 
 	for _, v := range w.formatter {
@@ -283,9 +272,9 @@ func (w Writer) writeMap(a map[string]any) (int, error) {
 	}()
 
 	if len(w.includeLevels) > 0 {
-		levels := getLevels(a)
+		levels := formatter.GetLevels(a)
 		for _, l := range levels {
-			if !includes(w.includeLevels, l) {
+			if !g.Includes(w.includeLevels, l) {
 				return 0, nil
 			}
 		}
@@ -304,7 +293,7 @@ func (w Writer) writeMap(a map[string]any) (int, error) {
 func (w Writer) writeFields(buf *bytes.Buffer, evt map[string]any) {
 	var keys = make([]string, 0, len(evt))
 	for key := range evt {
-		if includes(w.excludeKeys, key) {
+		if g.Includes(w.excludeKeys, key) {
 			continue
 		}
 		keys = append(keys, key)
@@ -318,7 +307,8 @@ func (w Writer) writeFields(buf *bytes.Buffer, evt map[string]any) {
 
 	for i, key := range keys {
 		buf.WriteString(w.extractor(evt, key))
-		if i < len(keys)-1 { // Skip space for last key
+		// Skip space for last key
+		if i < len(keys)-1 {
 			buf.WriteByte(' ')
 		}
 	}
@@ -334,49 +324,10 @@ func (w Writer) writePinned(buf *bytes.Buffer, evt map[string]any, p string) {
 	}
 
 	if len(s) > 0 {
+		// Write space only if not the first part
 		if buf.Len() > 0 {
-			buf.WriteByte(' ') // Write space only if not the first part
+			buf.WriteByte(' ')
 		}
 		buf.WriteString(s)
 	}
-}
-
-func formatKey(noColor bool) Stringer {
-	return func(i any) string {
-		return colorize(fmt.Sprintf("%s=", i), ColorCyan, noColor)
-	}
-}
-
-func extractor(noColor bool, fn Stringer) Extractor {
-	return func(m map[string]any, k string) string {
-		ret := fn(k)
-		switch fValue := m[k].(type) {
-		case string:
-			if needsQuote(fValue) {
-				ret += strconv.Quote(fValue)
-			} else {
-				ret += fValue
-			}
-		case json.Number:
-			ret += fValue.String()
-		default:
-			b, err := json.Marshal(fValue)
-			if err != nil {
-				ret += fmt.Sprintf(colorize("[error: %v]", ColorRed, noColor), err)
-			} else {
-				ret += string(b)
-			}
-		}
-		return ret
-	}
-}
-
-// needsQuote returns true when the string s should be quoted in output.
-func needsQuote(s string) bool {
-	for i := range s {
-		if s[i] < 0x20 || s[i] > 0x7e || s[i] == ' ' || s[i] == '\\' || s[i] == '"' {
-			return true
-		}
-	}
-	return false
 }
