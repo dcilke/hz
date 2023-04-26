@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dcilke/hz/pkg/processor"
+	"github.com/dcilke/hz/pkg/emitter"
 	"github.com/dcilke/hz/pkg/terminator"
 	"github.com/dcilke/hz/pkg/writer"
 	"github.com/jessevdk/go-flags"
@@ -28,10 +28,35 @@ func main() {
 		fmt.Fprint(os.Stderr, fmt.Errorf("unable to parse arguments: %w", err))
 	}
 
-	p := processor.New(writer.New(writer.WithLevelFilters(cmd.Level)), processor.WithStrict(cmd.Strict))
+	bufSize := emitter.DefaultBufSize
+	if cmd.Strict {
+		bufSize = 0
+	}
+
+	w := writer.New(
+		writer.WithLevelFilters(cmd.Level),
+	)
+	e := emitter.New(
+		emitter.WithBufSize(bufSize),
+		emitter.WithJSON(func(a any) {
+			s, _ := w.WriteAny(a)
+			if s > 0 {
+				w.Println()
+			}
+		}),
+		emitter.WithBytes(func(b []byte) {
+			s, _ := w.Print(string(b))
+			if s > 0 {
+				w.Println()
+			}
+		}),
+		emitter.WithError(func(err error) {
+			fmt.Fprint(os.Stderr, fmt.Errorf("extractor error: %w", err))
+		}),
+	)
 
 	terminator.OnSig(func() int {
-		p.Flush()
+		e.Flush()
 		return 0
 	})
 
@@ -41,10 +66,10 @@ func main() {
 			if err != nil {
 				fmt.Fprint(os.Stderr, fmt.Errorf("unable to open %q: %w", filename, err))
 			}
-			p.Process(f)
+			e.Process(f)
 		}
 		return
 	}
 
-	p.Process(os.Stdin)
+	e.Process(os.Stdin)
 }

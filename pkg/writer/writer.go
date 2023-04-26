@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"reflect"
 	"sort"
 	"sync"
 
@@ -221,33 +222,29 @@ func (w Writer) Print(a ...any) (int, error) {
 	return int(b), err
 }
 
-func (w Writer) Printf(format string, a ...any) (int, error) {
+func (w Writer) Println(a ...any) (int, error) {
 	var buf = bufPool.Get().(*bytes.Buffer)
 	defer func() {
 		buf.Reset()
 		bufPool.Put(buf)
 	}()
 
-	if b, err := fmt.Fprintf(buf, format, a...); err != nil {
+	if b, err := fmt.Fprintln(buf, a...); err != nil {
 		return b, err
 	}
 	b, err := buf.WriteTo(w.out)
 	return int(b), err
 }
 
-func (w Writer) Error(e error) (int, error) {
-	return fmt.Fprint(w.err, e)
-}
-
 // WriteBytes transforms the JSON input with formatters and appends to w.Out.
 func (w Writer) Write(p []byte) (int, error) {
-	var msg map[string]any
+	var msg any
 	d := json.NewDecoder(bytes.NewReader(p))
 	d.UseNumber()
 	if err := d.Decode(&msg); err != nil {
-		return w.Printf("%s", string(p))
+		return w.Print(string(p))
 	}
-	return w.writeMap(msg)
+	return w.WriteAny(msg)
 }
 
 // Write transforms the JSON input with formatters and appends to w.Out.
@@ -259,7 +256,11 @@ func (w Writer) WriteAny(a any) (int, error) {
 		return w.writeMap(m)
 	}
 	if b, ok := a.([]byte); ok {
-		return w.Write(b)
+		return w.Print(b)
+	}
+	switch reflect.TypeOf(a).Kind() {
+	case reflect.Array, reflect.Slice:
+		return w.writeArray(a.([]any))
 	}
 	return w.Print(a)
 }
@@ -287,6 +288,30 @@ func (w Writer) writeMap(a map[string]any) (int, error) {
 	w.writeFields(buf, a)
 	b, err := buf.WriteTo(w.out)
 	return int(b), err
+}
+
+func (w Writer) writeArray(a []any) (int, error) {
+	b, err := w.Print("[\n")
+	if err != nil {
+		return b, err
+	}
+	for _, v := range a {
+		c, err := w.WriteAny(v)
+		b += c
+		if err != nil {
+			return b, err
+		}
+		if c > 0 {
+			c, err = w.Print("\n")
+			b += c
+			if err != nil {
+				return b, err
+			}
+		}
+	}
+	c, err := w.Print("]")
+	b += c
+	return b, err
 }
 
 // writeFields appends formatted key-value pairs to buf.

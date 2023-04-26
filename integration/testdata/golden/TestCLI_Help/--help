@@ -1,0 +1,9 @@
+Usage:
+  hz [FILE]
+
+Application Options:
+  -s, --strict  strict mode
+  -l, --level=  only output lines at this level
+
+Help Options:
+  -h, --help    Show this help message

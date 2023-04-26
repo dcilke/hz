@@ -10,10 +10,11 @@ import (
 )
 
 type j = map[string]any
+type a = []any
 
 func TestConsole(t *testing.T) {
 	testcases := map[string]struct {
-		in  j
+		in  any
 		out string
 	}{
 		"level":      {j{"level": "info"}, "<nil> INF"},
@@ -68,6 +69,24 @@ func TestConsole(t *testing.T) {
 				"foo": "bar",
 			},
 			"timestamp=00:00:00 @timestamp=11:11:11 time=22:22:22 level=INF log.level=WRN message=message msg=msg error=error err=err foo=bar",
+		},
+		"array": {
+			a{
+				j{"level": "info", "message": "message"},
+				j{"foo": "bar"},
+				"foo",
+				5,
+			},
+			"[\n<nil> INF message\n<nil> foo=bar\nfoo\n5\n]",
+		},
+		"array-nested": {
+			a{
+				j{"level": "info", "message": "message"},
+				a{
+					j{"level": "info", "message": "message"},
+				},
+			},
+			"[\n<nil> INF message\n[\n<nil> INF message\n]\n]",
 		},
 	}
 	for name, tc := range testcases {
