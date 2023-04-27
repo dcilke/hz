@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dcilke/hz/pkg/emitter"
-	"github.com/dcilke/hz/pkg/terminator"
+	"github.com/dcilke/gu"
+	"github.com/dcilke/heron"
 	"github.com/dcilke/hz/pkg/writer"
 	"github.com/jessevdk/go-flags"
 )
@@ -28,7 +28,7 @@ func main() {
 		fmt.Fprint(os.Stderr, fmt.Errorf("unable to parse arguments: %w", err))
 	}
 
-	bufSize := emitter.DefaultBufSize
+	bufSize := heron.DefaultBufSize
 	if cmd.Strict {
 		bufSize = 0
 	}
@@ -36,27 +36,27 @@ func main() {
 	w := writer.New(
 		writer.WithLevelFilters(cmd.Level),
 	)
-	e := emitter.New(
-		emitter.WithBufSize(bufSize),
-		emitter.WithJSON(func(a any) {
+	h := heron.New(
+		heron.WithBufSize(bufSize),
+		heron.WithJSON(func(a any) {
 			s, _ := w.WriteAny(a)
 			if s > 0 {
 				w.Println()
 			}
 		}),
-		emitter.WithBytes(func(b []byte) {
+		heron.WithBytes(func(b []byte) {
 			s, _ := w.Print(string(b))
 			if s > 0 {
 				w.Println()
 			}
 		}),
-		emitter.WithError(func(err error) {
+		heron.WithError(func(err error) {
 			fmt.Fprint(os.Stderr, fmt.Errorf("extractor error: %w", err))
 		}),
 	)
 
-	terminator.OnSig(func() int {
-		e.Flush()
+	gu.Terminator(func() int {
+		h.Flush()
 		return 0
 	})
 
@@ -66,10 +66,10 @@ func main() {
 			if err != nil {
 				fmt.Fprint(os.Stderr, fmt.Errorf("unable to open %q: %w", filename, err))
 			}
-			e.Process(f)
+			h.Process(f)
 		}
 		return
 	}
 
-	e.Process(os.Stdin)
+	h.Process(os.Stdin)
 }

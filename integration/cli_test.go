@@ -3,7 +3,7 @@ package integration
 import (
 	"testing"
 
-	"github.com/dcilke/hz/pkg/golden"
+	"github.com/dcilke/golden"
 	"github.com/stretchr/testify/require"
 )
 

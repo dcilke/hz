@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/dcilke/hz/pkg/g"
+	"github.com/dcilke/gu"
 )
 
 const (
@@ -51,7 +51,7 @@ func (f *Timestamp) Format(m map[string]any) string {
 		attimestamp = f.getTime(i)
 	}
 
-	if ok, value := g.SameOrEmpty(timestamp, attimestamp, time); ok {
+	if ok, value := gu.SameOrZero(timestamp, attimestamp, time); ok {
 		if value == "" {
 			return Colorize(DefaultTimeValue, ColorDarkGray, f.noColor)
 		}

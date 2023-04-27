@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/dcilke/hz/pkg/g"
+	"github.com/dcilke/gu"
 )
 
 const (
@@ -37,7 +37,7 @@ func (f *Error) Format(m map[string]any) string {
 	if i, ok := m[KeyErr]; ok {
 		ferr = f.formatValue(i)
 	}
-	if ok, value := g.SameOrEmpty(ferror, ferr); ok {
+	if ok, value := gu.SameOrZero(ferror, ferr); ok {
 		if value == "" {
 			return ""
 		}

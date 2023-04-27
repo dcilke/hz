@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dcilke/hz/pkg/g"
+	"github.com/dcilke/gu"
 )
 
 const (
@@ -57,7 +57,7 @@ func NewLevel(noColor bool, formatKey Stringer) Formatter {
 func (f *Level) Format(m map[string]any) string {
 	levels := GetLevels(m)
 
-	if ok, value := g.SameOrEmpty(levels[KeyLevel], levels[KeyLog]); ok {
+	if ok, value := gu.SameOrZero(levels[KeyLevel], levels[KeyLog]); ok {
 		if value == "" {
 			return ""
 		}

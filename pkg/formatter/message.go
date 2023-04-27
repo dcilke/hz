@@ -3,7 +3,7 @@ package formatter
 import (
 	"fmt"
 
-	"github.com/dcilke/hz/pkg/g"
+	"github.com/dcilke/gu"
 )
 
 const (
@@ -37,7 +37,7 @@ func (f *Message) Format(m map[string]any) string {
 		msg = fmt.Sprintf("%s", i)
 	}
 
-	if ok, value := g.SameOrEmpty(message, msg); ok {
+	if ok, value := gu.SameOrZero(message, msg); ok {
 		if value == "" {
 			return ""
 		}

@@ -10,8 +10,8 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/dcilke/gu"
 	"github.com/dcilke/hz/pkg/formatter"
-	"github.com/dcilke/hz/pkg/g"
 	"github.com/mattn/go-colorable"
 )
 
@@ -275,7 +275,7 @@ func (w Writer) writeMap(a map[string]any) (int, error) {
 	if len(w.includeLevels) > 0 {
 		levels := formatter.GetLevels(a)
 		for _, l := range levels {
-			if !g.Includes(w.includeLevels, l) {
+			if !gu.Includes(w.includeLevels, l) {
 				return 0, nil
 			}
 		}
@@ -318,7 +318,7 @@ func (w Writer) writeArray(a []any) (int, error) {
 func (w Writer) writeFields(buf *bytes.Buffer, evt map[string]any) {
 	var keys = make([]string, 0, len(evt))
 	for key := range evt {
-		if g.Includes(w.excludeKeys, key) {
+		if gu.Includes(w.excludeKeys, key) {
 			continue
 		}
 		keys = append(keys, key)
