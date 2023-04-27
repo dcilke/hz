@@ -28,7 +28,7 @@ func NewError(noColor bool, formatKey Stringer) Formatter {
 	}
 }
 
-func (f *Error) Format(m map[string]any, _ string) string {
+func (f *Error) Format(m map[string]any) string {
 	var ferr string
 	var ferror string
 	if i, ok := m[KeyError]; ok {

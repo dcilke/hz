@@ -190,7 +190,7 @@ func New(options ...Option) Writer {
 		w.formatter[PinMessage] = formatter.NewMessage(w.noColor, w.formatKey)
 	}
 	if _, ok := w.formatter[PinCaller]; !ok {
-		w.formatter[PinCaller] = formatter.NewCaller(w.noColor, w.formatKey)
+		w.formatter[PinCaller] = formatter.NewCaller(w.noColor)
 	}
 	if _, ok := w.formatter[PinError]; !ok {
 		w.formatter[PinError] = formatter.NewError(w.noColor, w.formatKey)
@@ -198,7 +198,7 @@ func New(options ...Option) Writer {
 
 	// Ensure default extractor
 	if w.extractor == nil {
-		w.extractor = formatter.Map(w.noColor, w.formatKey)
+		w.extractor = formatter.Map(w.formatKey)
 	}
 
 	for _, v := range w.formatter {
@@ -343,7 +343,7 @@ func (w Writer) writeFields(buf *bytes.Buffer, evt map[string]any) {
 func (w Writer) writePinned(buf *bytes.Buffer, evt map[string]any, p string) {
 	var s string
 	if f, ok := w.formatter[p]; ok {
-		s = f.Format(evt, p)
+		s = f.Format(evt)
 	} else {
 		s = w.extractor(evt, p)
 	}

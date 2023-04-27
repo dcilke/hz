@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_ToBytes(t *testing.T) {
+func TestToBytes(t *testing.T) {
 	testcases := map[string]struct {
 		in  any
 		out []byte
@@ -28,7 +28,7 @@ func Test_ToBytes(t *testing.T) {
 	}
 }
 
-func Test_Assert(t *testing.T) {
+func TestAssert(t *testing.T) {
 	testcases := map[string]struct {
 		actual any
 	}{
@@ -47,7 +47,7 @@ func Test_Assert(t *testing.T) {
 	}
 }
 
-func Test_Subsert(t *testing.T) {
+func TestSubsert(t *testing.T) {
 	testcases := map[string]struct {
 		actual any
 	}{

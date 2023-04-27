@@ -27,7 +27,7 @@ func NewMessage(noColor bool, formatKey Stringer) Formatter {
 	}
 }
 
-func (f *Message) Format(m map[string]any, _ string) string {
+func (f *Message) Format(m map[string]any) string {
 	var message string
 	var msg string
 	if i, ok := m[KeyMessage]; ok {

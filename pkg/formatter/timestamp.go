@@ -37,7 +37,7 @@ func NewTimestamp(noColor bool, formatKeys Stringer, timeFormat string) Formatte
 	}
 }
 
-func (f *Timestamp) Format(m map[string]any, _ string) string {
+func (f *Timestamp) Format(m map[string]any) string {
 	var timestamp string
 	var attimestamp string
 	var time string

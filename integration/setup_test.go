@@ -29,5 +29,5 @@ func hz(args ...string) ([]byte, error) {
 }
 
 func fn(file string) string {
-	return filepath.Join("data", file)
+	return filepath.Join("testdata", "samples", file)
 }

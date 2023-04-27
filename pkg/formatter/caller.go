@@ -12,20 +12,18 @@ const (
 var _ Formatter = (*Caller)(nil)
 
 type Caller struct {
-	noColor   bool
-	formatKey Stringer
-	keys      []string
+	noColor bool
+	keys    []string
 }
 
-func NewCaller(noColor bool, formatKey Stringer) Formatter {
+func NewCaller(noColor bool) Formatter {
 	return &Caller{
-		noColor:   noColor,
-		formatKey: formatKey,
-		keys:      []string{KeyCaller},
+		noColor: noColor,
+		keys:    []string{KeyCaller},
 	}
 }
 
-func (f *Caller) Format(m map[string]any, _ string) string {
+func (f *Caller) Format(m map[string]any) string {
 	if i, ok := m[KeyCaller]; ok {
 		var c string
 		if cc, ok := i.(string); ok {

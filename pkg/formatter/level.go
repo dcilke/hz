@@ -3,6 +3,7 @@ package formatter
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/dcilke/hz/pkg/g"
 )
@@ -53,7 +54,7 @@ func NewLevel(noColor bool, formatKey Stringer) Formatter {
 	}
 }
 
-func (f *Level) Format(m map[string]any, _ string) string {
+func (f *Level) Format(m map[string]any) string {
 	levels := GetLevels(m)
 
 	if ok, value := g.SameOrEmpty(levels[KeyLevel], levels[KeyLog]); ok {
@@ -90,7 +91,11 @@ func (f *Level) format(l string) string {
 	case LevelTraceStr:
 		return Colorize(DefaultLevelTraceValue, ColorMagenta, f.noColor)
 	default:
-		return Colorize(DefaultLevelValue, ColorBold, f.noColor)
+		ll := strings.ToUpper(l)
+		if len(ll) > 3 {
+			ll = ll[0:3]
+		}
+		return Colorize(ll, ColorBold, f.noColor)
 	}
 }
 
@@ -114,24 +119,7 @@ func getLevel(i any) string {
 		return ""
 	}
 
-	if l, ok := i.(string); ok {
-		switch l {
-		case LevelPanicStr:
-			return LevelPanicStr
-		case LevelFatalStr:
-			return LevelFatalStr
-		case LevelErrorStr:
-			return LevelErrorStr
-		case LevelWarnStr:
-			return LevelWarnStr
-		case LevelInfoStr:
-			return LevelInfoStr
-		case LevelDebugStr:
-			return LevelDebugStr
-		case LevelTraceStr:
-			return LevelTraceStr
-		}
-	} else if n, ok := i.(json.Number); ok {
+	if n, ok := i.(json.Number); ok {
 		if l, err := n.Int64(); err == nil {
 			if l >= LevelPanicNum {
 				return LevelPanicStr
@@ -152,6 +140,25 @@ func getLevel(i any) string {
 				return LevelDebugStr
 			}
 			if l >= LevelTraceNum {
+				return LevelTraceStr
+			}
+		}
+	} else {
+		if l, ok := i.(string); ok {
+			switch l {
+			case LevelPanicStr:
+				return LevelPanicStr
+			case LevelFatalStr:
+				return LevelFatalStr
+			case LevelErrorStr:
+				return LevelErrorStr
+			case LevelWarnStr:
+				return LevelWarnStr
+			case LevelInfoStr:
+				return LevelInfoStr
+			case LevelDebugStr:
+				return LevelDebugStr
+			case LevelTraceStr:
 				return LevelTraceStr
 			}
 		}
