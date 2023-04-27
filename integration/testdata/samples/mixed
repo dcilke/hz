@@ -1,0 +1,11 @@
+servicea {"module":"http","time":"2022-08-03T12:34:25.142900417Z","log":{"level":"trace"},"message":"yup"}
+servicea {"module":"http","time":"2022-08-03T12:34:25.605701107Z","log":{"level":"debug"},"message":"yeah"}
+servicea {"module":"http","time":"2022-08-03T12:34:26.143015538Z","log":{"level":"info"},"message":"here"}
+serviceb {"module":"grpc","time":"2022-08-03T12:34:26.543649596Z","log":{"level":"warn"},"message":"warning, something is suspicious"}
+servicea {"module":"http","time":"2022-08-03T12:34:27.142783759Z","log":{"level":"error"},"message":"hit"}
+serviceb {"module":"grpc","time":"2022-08-03T12:34:27.428810856Z","log":{"level":"warn"},"message":"this shouldn't happen"}
+servicea {"module":"grpc","time":"2022-08-03T12:34:28.119661968Z","log":{"level":"warn"},"message":"seriously?!?"}
+serviceb {"module":"http","time":"2022-08-03T12:34:28.142497379Z","log":{"level":"fatal"},"message":"fatal"}
+servicea {"module":"http","time":"2022-08-03T12:34:29.142768807Z","log":{"level":"panic"},"message":"panic!"}
+serviceb {"module":"search","time":"2022-08-03T12:34:29.157192604Z","log":{"level":"debug"},"message":"wat"}
+servicea {"module":"search","method":"GET","url":{"full":"www.example.com","original":"https://original.url","domain":"localhost","path":"/yo","port":80,"scheme":"http"},"statusCode":200,"elapsed":8.268013,"time":"2022-08-03T12:34:29.165763321Z","log":{"level":"debug"},"message":"request"}

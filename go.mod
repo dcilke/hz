@@ -19,7 +19,7 @@ require (
 
 require (
 	github.com/dcilke/gu v0.1.0
-	github.com/dcilke/heron v0.1.0
+	github.com/dcilke/heron v0.2.0
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6 // indirect

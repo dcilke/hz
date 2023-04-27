@@ -1,0 +1,11 @@
+servicea 
+servicea 
+servicea 
+serviceb [90m12:34:26[0m [31mWRN[0m warning, something is suspicious [36mmodule=[0mgrpc
+servicea 
+serviceb [90m12:34:27[0m [31mWRN[0m this shouldn't happen [36mmodule=[0mgrpc
+servicea [90m12:34:28[0m [31mWRN[0m seriously?!? [36mmodule=[0mgrpc
+serviceb 
+servicea 
+serviceb 
+servicea 

@@ -10,6 +10,10 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
+const (
+	newline = "\n"
+)
+
 type Cmd struct {
 	Strict bool     `short:"s" long:"strict" description:"strict mode"`
 	Level  []string `short:"l" long:"level" description:"only output lines at this level"`
@@ -36,19 +40,26 @@ func main() {
 	w := writer.New(
 		writer.WithLevelFilters(cmd.Level),
 	)
+	// didnl is used to prevent double newlines since we want to ensure each JSON
+	// objects is on its own line but we want to preserve as much of the output
+	// as possible
+	didnl := true
 	h := heron.New(
 		heron.WithBufSize(bufSize),
 		heron.WithJSON(func(a any) {
 			s, _ := w.WriteAny(a)
 			if s > 0 {
+				didnl = true
 				w.Println()
 			}
 		}),
 		heron.WithBytes(func(b []byte) {
-			s, _ := w.Print(string(b))
-			if s > 0 {
-				w.Println()
+			sb := string(b)
+			if sb == newline && didnl {
+				return
 			}
+			didnl = false
+			_, _ = w.Print(sb)
 		}),
 		heron.WithError(func(err error) {
 			fmt.Fprint(os.Stderr, fmt.Errorf("extractor error: %w", err))

@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var filecases = []string{"strings", "ndjson", "pretty", "array"}
+var filecases = []string{"strings", "ndjson", "pretty", "array", "mixed"}
 var levels = []string{"trace", "debug", "info", "warn", "error", "fatal", "panic"}
 
 func TestCLI(t *testing.T) {
