@@ -1,10 +1,24 @@
+[![Go Reference](https://pkg.go.dev/badge/github.com/dcilke/hz.svg)](https://pkg.go.dev/github.com/dcilke/hz)
+![Build Status](https://github.com/dcilke/hz/actions/workflows/release.yml/badge.svg)
+
 # hz
 
-hz - Human readable zerolog streaming formatter
+Human readable streaming formatter based on `zerolog.ConsoleWriter{}`
 
 ## Install
 
-`go get github.com/dcilke/hz`
+### Go
+
+```zsh
+go get github.com/dcilke/hz
+```
+
+### Homebrew
+
+```zsh
+brew tap dcilke/taps
+brew install dcilke/taps/hz
+```
 
 ## Why?
 
