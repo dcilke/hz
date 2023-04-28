@@ -1,3 +1,3 @@
 [
-[90m12:34:29[0m [1m[31mPNC[0m[0m panic! [36mmodule=[0mhttp
+[90m12:34:29[0m [1m[31mPNC[0m[0m panic! [36mlog=[0m{"level":"panic"} [36mmodule=[0mhttp
 ]

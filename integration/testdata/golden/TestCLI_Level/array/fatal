@@ -1,3 +1,3 @@
 [
-[90m12:34:28[0m [1m[31mFTL[0m[0m fatal [36mmodule=[0mhttp
+[90m12:34:28[0m [1m[31mFTL[0m[0m fatal [36mlog=[0m{"level":"fatal"} [36mmodule=[0mhttp
 ]

@@ -1,6 +1,6 @@
 servicea 
 servicea 
-servicea [90m12:34:26[0m [32mINF[0m here [36mmodule=[0mhttp
+servicea [90m12:34:26[0m [32mINF[0m here [36mlog=[0m{"level":"info"} [36mmodule=[0mhttp
 serviceb 
 servicea 
 serviceb 

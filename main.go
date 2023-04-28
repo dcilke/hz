@@ -17,6 +17,7 @@ const (
 type Cmd struct {
 	Strict bool     `short:"s" long:"strict" description:"strict mode"`
 	Level  []string `short:"l" long:"level" description:"only output lines at this level"`
+	Flat   bool     `short:"f" long:"flat" description:"flatten output"`
 }
 
 func main() {
@@ -39,6 +40,7 @@ func main() {
 
 	w := writer.New(
 		writer.WithLevelFilters(cmd.Level),
+		writer.WithFlatten(cmd.Flat),
 	)
 	// didnl is used to prevent double newlines since we want to ensure each JSON
 	// objects is on its own line but we want to preserve as much of the output

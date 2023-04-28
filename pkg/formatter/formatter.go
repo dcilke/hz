@@ -13,8 +13,8 @@ type Formatter interface {
 	ExcludeKeys() []string
 }
 
-// Extractor extracts multiple values and formats them
-type Extractor func(map[string]any, string) string
+// Fielder formats a key value pair
+type Fielder func(key string, value any) string
 
 // Stringer stringifies a value
 type Stringer func(any) string
@@ -25,26 +25,26 @@ func Key(noColor bool) Stringer {
 	}
 }
 
-func Map(fn Stringer) Extractor {
-	return func(m map[string]any, k string) string {
-		ret := fn(k)
-		switch fValue := m[k].(type) {
+func Map(fn Stringer) Fielder {
+	return func(key string, value any) string {
+		ret := fn(key)
+		switch v := value.(type) {
 		case string:
-			if needsQuote(fValue) {
-				ret += strconv.Quote(fValue)
+			if needsQuote(v) {
+				ret += strconv.Quote(v)
 			} else {
-				ret += fValue
+				ret += v
 			}
 		case json.Number:
-			ret += fValue.String()
+			ret += v.String()
 		default:
-			b, err := json.Marshal(fValue)
+			b, err := json.Marshal(v)
 			if err == nil {
 				ret += string(b)
 			} else if strings.HasPrefix(err.Error(), "json: unsupported value: encountered a cycle") {
 				ret += "<cycle>"
 			} else {
-				ret += fmt.Sprintf("%v", fValue)
+				ret += fmt.Sprintf("%v", v)
 			}
 		}
 		return ret

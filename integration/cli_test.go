@@ -52,3 +52,9 @@ func TestCLI_Help(t *testing.T) {
 		})
 	}
 }
+
+func TestCLI_Flat(t *testing.T) {
+	output, err := hz(fn("nested"), "--flat")
+	require.NoError(t, err)
+	golden.Assert(t, output)
+}

@@ -23,6 +23,7 @@ const (
 	PinError     = "error"
 
 	defaultTimeFormat = "15:04:05"
+	defaultSep        = ' '
 )
 
 // Ensure we are adhering to the io.Writer interface.
@@ -71,11 +72,14 @@ type Writer struct {
 	// formatter defines a map of formatters for pins.
 	formatter map[string]formatter.Formatter
 
-	// extractor defines the default field formatter.
-	extractor formatter.Extractor
+	// fielder defines the default field formatter.
+	fielder formatter.Fielder
 
 	// formatKey defines the default key formatter.
 	formatKey formatter.Stringer
+
+	// flatten enables flattening of JSON objects.
+	flatten bool
 }
 
 type Option func(w *Writer)
@@ -120,9 +124,9 @@ func WithPinOrder(order []string) Option {
 	}
 }
 
-func WithExtractor(f formatter.Extractor) Option {
+func WithFielder(f formatter.Fielder) Option {
 	return func(w *Writer) {
-		w.extractor = f
+		w.fielder = f
 	}
 }
 
@@ -150,6 +154,12 @@ func WithLevelFilters(s []string) Option {
 	}
 }
 
+func WithFlatten(b bool) Option {
+	return func(w *Writer) {
+		w.flatten = b
+	}
+}
+
 // New creates and initializes a new ConsoleWriter.
 func New(options ...Option) Writer {
 	w := Writer{
@@ -159,6 +169,7 @@ func New(options ...Option) Writer {
 		pinOrder:    defaultPinOrder,
 		excludeKeys: make([]string, 0, 10),
 		formatter:   make(map[string]formatter.Formatter, 6),
+		flatten:     false,
 	}
 
 	for _, opt := range options {
@@ -197,8 +208,8 @@ func New(options ...Option) Writer {
 	}
 
 	// Ensure default extractor
-	if w.extractor == nil {
-		w.extractor = formatter.Map(w.formatKey)
+	if w.fielder == nil {
+		w.fielder = formatter.Map(w.formatKey)
 	}
 
 	for _, v := range w.formatter {
@@ -285,7 +296,18 @@ func (w Writer) writeMap(a map[string]any) (int, error) {
 		w.writePinned(buf, a, p)
 	}
 
-	w.writeFields(buf, a)
+	// Write space only if something has already been written to the buffer and we are going to write
+	// a key which was not pinned
+	if buf.Len() > 0 {
+		for key := range a {
+			if !gu.Includes(w.excludeKeys, key) {
+				buf.WriteByte(defaultSep)
+				break
+			}
+		}
+	}
+
+	w.writeFields(buf, a, "")
 	b, err := buf.WriteTo(w.out)
 	return int(b), err
 }
@@ -315,26 +337,26 @@ func (w Writer) writeArray(a []any) (int, error) {
 }
 
 // writeFields appends formatted key-value pairs to buf.
-func (w Writer) writeFields(buf *bytes.Buffer, evt map[string]any) {
+func (w Writer) writeFields(buf *bytes.Buffer, evt map[string]any, prefix string) {
 	var keys = make([]string, 0, len(evt))
 	for key := range evt {
-		if gu.Includes(w.excludeKeys, key) {
+		if gu.Includes(w.excludeKeys, prefix+key) {
 			continue
 		}
 		keys = append(keys, key)
 	}
 	sort.Strings(keys)
 
-	// Write space only if something has already been written to the buffer, and if there are keys.
-	if buf.Len() > 0 && len(keys) > 0 {
-		buf.WriteByte(' ')
-	}
-
 	for i, key := range keys {
-		buf.WriteString(w.extractor(evt, key))
+		value := evt[key]
+		if m, ok := value.(map[string]any); ok && w.flatten {
+			w.writeFields(buf, m, prefix+key+".")
+		} else {
+			buf.WriteString(w.fielder(prefix+key, value))
+		}
 		// Skip space for last key
 		if i < len(keys)-1 {
-			buf.WriteByte(' ')
+			buf.WriteByte(defaultSep)
 		}
 	}
 }
@@ -345,13 +367,13 @@ func (w Writer) writePinned(buf *bytes.Buffer, evt map[string]any, p string) {
 	if f, ok := w.formatter[p]; ok {
 		s = f.Format(evt)
 	} else {
-		s = w.extractor(evt, p)
+		s = w.fielder(p, evt[p])
 	}
 
 	if len(s) > 0 {
 		// Write space only if not the first part
 		if buf.Len() > 0 {
-			buf.WriteByte(' ')
+			buf.WriteByte(defaultSep)
 		}
 		buf.WriteString(s)
 	}

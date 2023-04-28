@@ -74,7 +74,7 @@ func TestMap(t *testing.T) {
 	for name, tc := range testcases {
 		t.Run(name, func(t *testing.T) {
 			f := formatter.Map(formatKey)
-			require.Equal(t, tc.expect, f(data, tc.key))
+			require.Equal(t, tc.expect, f(tc.key, data[tc.key]))
 		})
 	}
 }

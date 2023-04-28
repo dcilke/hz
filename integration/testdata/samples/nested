@@ -1,0 +1,33 @@
+{
+  "module": "http",
+  "time": "2022-08-03T12:34:25.142900417Z",
+  "log": {
+    "level": "trace"
+  },
+  "message": "yup",
+  "request": {
+    "url": "foo",
+    "headers": [
+      "a",
+      "b",
+      "c"
+    ],
+    "nest-a": {
+      "nest-b": {
+        "nest-c": {
+          "nest-d": "nested"
+        }
+      }
+    }
+  },
+  "sort": {
+    "z": {
+      "y": "y",
+      "x": "x"
+    },
+    "a": {
+      "c": "c",
+      "b": "b"
+    }
+  }
+}

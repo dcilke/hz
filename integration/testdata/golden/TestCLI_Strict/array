@@ -1,13 +1,13 @@
 [
-[90m12:34:25[0m [35mTRC[0m yup [36mmodule=[0mhttp
-[90m12:34:25[0m [33mDBG[0m yeah [36mmodule=[0mhttp
-[90m12:34:26[0m [32mINF[0m here [36mmodule=[0mhttp
-[90m12:34:26[0m [31mWRN[0m warning, something is suspicious [36mmodule=[0mgrpc
-[90m12:34:27[0m [1m[31mERR[0m[0m hit [36mmodule=[0mhttp
-[90m12:34:27[0m [31mWRN[0m this shouldn't happen [36mmodule=[0mgrpc
-[90m12:34:28[0m [31mWRN[0m seriously?!? [36mmodule=[0mgrpc
-[90m12:34:28[0m [1m[31mFTL[0m[0m fatal [36mmodule=[0mhttp
-[90m12:34:29[0m [1m[31mPNC[0m[0m panic! [36mmodule=[0mhttp
-[90m12:34:29[0m [33mDBG[0m wat [36mmodule=[0msearch
-[90m12:34:29[0m [33mDBG[0m request [36melapsed=[0m8.268013 [36mmethod=[0mGET [36mmodule=[0msearch [36mstatusCode=[0m200 [36murl=[0m{"domain":"localhost","full":"www.example.com","original":"https://original.url","path":"/yo","port":80,"scheme":"http"}
+[90m12:34:25[0m [35mTRC[0m yup [36mlog=[0m{"level":"trace"} [36mmodule=[0mhttp
+[90m12:34:25[0m [33mDBG[0m yeah [36mlog=[0m{"level":"debug"} [36mmodule=[0mhttp
+[90m12:34:26[0m [32mINF[0m here [36mlog=[0m{"level":"info"} [36mmodule=[0mhttp
+[90m12:34:26[0m [31mWRN[0m warning, something is suspicious [36mlog=[0m{"level":"warn"} [36mmodule=[0mgrpc
+[90m12:34:27[0m [1m[31mERR[0m[0m hit [36mlog=[0m{"level":"error"} [36mmodule=[0mhttp
+[90m12:34:27[0m [31mWRN[0m this shouldn't happen [36mlog=[0m{"level":"warn"} [36mmodule=[0mgrpc
+[90m12:34:28[0m [31mWRN[0m seriously?!? [36mlog=[0m{"level":"warn"} [36mmodule=[0mgrpc
+[90m12:34:28[0m [1m[31mFTL[0m[0m fatal [36mlog=[0m{"level":"fatal"} [36mmodule=[0mhttp
+[90m12:34:29[0m [1m[31mPNC[0m[0m panic! [36mlog=[0m{"level":"panic"} [36mmodule=[0mhttp
+[90m12:34:29[0m [33mDBG[0m wat [36mlog=[0m{"level":"debug"} [36mmodule=[0msearch
+[90m12:34:29[0m [33mDBG[0m request [36melapsed=[0m8.268013 [36mlog=[0m{"level":"debug"} [36mmethod=[0mGET [36mmodule=[0msearch [36mstatusCode=[0m200 [36murl=[0m{"domain":"localhost","full":"www.example.com","original":"https://original.url","path":"/yo","port":80,"scheme":"http"}
 ]

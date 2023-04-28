@@ -59,7 +59,7 @@ func TestLevel(t *testing.T) {
 
 func TestLevel_ExcludeKeys(t *testing.T) {
 	f := formatter.NewLevel(false, nil)
-	require.Equal(t, []string{formatter.KeyLevel, formatter.KeyLog}, f.ExcludeKeys())
+	require.Equal(t, []string{"level", "log.level"}, f.ExcludeKeys())
 }
 
 func ml(level any) map[string]any {

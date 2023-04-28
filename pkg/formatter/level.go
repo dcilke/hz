@@ -50,7 +50,7 @@ func NewLevel(noColor bool, formatKey Stringer) Formatter {
 	return &Level{
 		noColor:   noColor,
 		formatKey: formatKey,
-		keys:      []string{KeyLevel, KeyLog},
+		keys:      []string{KeyLevel, KeyLog + "." + KeyLevel},
 	}
 }
 
