@@ -1,6 +1,6 @@
 module github.com/dcilke/hz
 
-go 1.18
+go 1.20
 
 require (
 	github.com/dcilke/golden v0.1.0

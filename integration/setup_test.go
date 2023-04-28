@@ -8,8 +8,6 @@ import (
 	"testing"
 )
 
-const ()
-
 var command string
 
 func TestMain(m *testing.M) {

@@ -1,0 +1,28 @@
+builds:
+  - binary: hz
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -mod=mod
+
+release:
+  prerelease: auto
+
+universal_binaries:
+  - replace: true
+
+brews:
+  - name: hz
+    homepage: "https://github.com/dcilke/hz"
+    tap:
+      owner: dcilke
+      name: homebrew-taps
+
+checksum:
+  name_template: 'checksums.txt'
