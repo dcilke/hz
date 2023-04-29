@@ -203,28 +203,44 @@ func New(options ...Option) Writer {
 
 	// Ensure default formatters, if not specified in input
 	if _, ok := w.formatter[PinTimestamp]; !ok {
-		w.formatter[PinTimestamp] = formatter.NewTimestamp(w.color, w.formatKey, w.timeFormat)
+		f := formatter.NewTimestamp(w.color, w.formatKey, w.timeFormat)
+		w.formatter[PinTimestamp] = f
+		if gu.Includes(w.pinOrder, PinTimestamp) {
+			w.excludeKeys = append(w.excludeKeys, f.ExcludeKeys()...)
+		}
 	}
 	if _, ok := w.formatter[PinLevel]; !ok {
-		w.formatter[PinLevel] = formatter.NewLevel(w.color, w.formatKey)
+		f := formatter.NewLevel(w.color, w.formatKey)
+		w.formatter[PinLevel] = f
+		if gu.Includes(w.pinOrder, PinLevel) {
+			w.excludeKeys = append(w.excludeKeys, f.ExcludeKeys()...)
+		}
 	}
 	if _, ok := w.formatter[PinMessage]; !ok {
-		w.formatter[PinMessage] = formatter.NewMessage(w.color, w.formatKey)
+		f := formatter.NewMessage(w.color, w.formatKey)
+		w.formatter[PinMessage] = f
+		if gu.Includes(w.pinOrder, PinMessage) {
+			w.excludeKeys = append(w.excludeKeys, f.ExcludeKeys()...)
+		}
 	}
 	if _, ok := w.formatter[PinCaller]; !ok {
-		w.formatter[PinCaller] = formatter.NewCaller(w.color)
+		f := formatter.NewCaller(w.color)
+		w.formatter[PinCaller] = f
+		if gu.Includes(w.pinOrder, PinCaller) {
+			w.excludeKeys = append(w.excludeKeys, f.ExcludeKeys()...)
+		}
 	}
 	if _, ok := w.formatter[PinError]; !ok {
-		w.formatter[PinError] = formatter.NewError(w.color, w.formatKey)
+		f := formatter.NewError(w.color, w.formatKey)
+		w.formatter[PinError] = f
+		if gu.Includes(w.pinOrder, PinError) {
+			w.excludeKeys = append(w.excludeKeys, f.ExcludeKeys()...)
+		}
 	}
 
 	// Ensure default extractor
 	if w.fielder == nil {
 		w.fielder = formatter.Map(w.formatKey)
-	}
-
-	for _, v := range w.formatter {
-		w.excludeKeys = append(w.excludeKeys, v.ExcludeKeys()...)
 	}
 
 	return w

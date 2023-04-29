@@ -59,13 +59,19 @@ func TestCLI_Flat(t *testing.T) {
 }
 
 func TestCLI_Vert(t *testing.T) {
-	output, err := hz(fn("nested"), "--plain", "--vert")
+	output, err := hz(fn("nested"), "--plain", "--vertical")
 	require.NoError(t, err)
 	golden.Assert(t, output)
 }
 
 func TestCLI_Color(t *testing.T) {
 	output, err := hz(fn("mixed"))
+	require.NoError(t, err)
+	golden.Assert(t, output)
+}
+
+func TestCLI_NoPin(t *testing.T) {
+	output, err := hz(fn("mixed"), "--plain", "--no-pin")
 	require.NoError(t, err)
 	golden.Assert(t, output)
 }

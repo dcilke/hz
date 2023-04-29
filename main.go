@@ -15,11 +15,12 @@ const (
 )
 
 type Cmd struct {
-	Level  []string `short:"l" long:"level" description:"only output lines at this level"`
-	Strict bool     `short:"s" long:"strict" description:"strict mode"`
-	Flat   bool     `short:"f" long:"flat" description:"flatten output"`
-	Vert   bool     `short:"v" long:"vert" description:"vertical output"`
-	Plain  bool     `short:"p" long:"plain" description:"plain (no color) output"`
+	Level    []string `short:"l" long:"level" description:"only output lines at this level"`
+	Strict   bool     `short:"s" long:"strict" description:"strict mode"`
+	Flat     bool     `short:"f" long:"flat" description:"flatten output"`
+	Vertical bool     `short:"v" long:"vertical" description:"vertical output"`
+	Plain    bool     `short:"p" long:"plain" description:"plain (no color) output"`
+	NoPin    bool     `short:"n" long:"no-pin" description:"don't pin any fields"`
 }
 
 func main() {
@@ -40,12 +41,18 @@ func main() {
 		bufSize = 0
 	}
 
-	w := writer.New(
+	opts := []writer.Option{
 		writer.WithLevelFilters(cmd.Level),
 		writer.WithFlatten(cmd.Flat),
-		writer.WithVertical(cmd.Vert),
+		writer.WithVertical(cmd.Vertical),
 		writer.WithColor(!cmd.Plain),
-	)
+	}
+
+	if cmd.NoPin {
+		opts = append(opts, writer.WithPinOrder([]string{}))
+	}
+
+	w := writer.New(opts...)
 	// didnl is used to prevent double newlines since we want to ensure each JSON
 	// objects is on its own line but we want to preserve as much of the output
 	// as possible

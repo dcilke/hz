@@ -2,11 +2,12 @@ Usage:
   hz [FILE]
 
 Application Options:
-  -l, --level=  only output lines at this level
-  -s, --strict  strict mode
-  -f, --flat    flatten output
-  -v, --vert    vertical output
-  -p, --plain   plain (no color) output
+  -l, --level=    only output lines at this level
+  -s, --strict    strict mode
+  -f, --flat      flatten output
+  -v, --vertical  vertical output
+  -p, --plain     plain (no color) output
+  -n, --no-pin    don't pin any fields
 
 Help Options:
-  -h, --help    Show this help message
+  -h, --help      Show this help message
