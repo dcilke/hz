@@ -24,6 +24,8 @@ const (
 
 	defaultTimeFormat = "15:04:05"
 	defaultSep        = ' '
+	newline           = '\n'
+	tab               = '\t'
 )
 
 // Ensure we are adhering to the io.Writer interface.
@@ -80,6 +82,9 @@ type Writer struct {
 
 	// flatten enables flattening of JSON objects.
 	flatten bool
+
+	// vertical enables vertical printing of JSON objects
+	vertical bool
 }
 
 type Option func(w *Writer)
@@ -157,6 +162,12 @@ func WithLevelFilters(s []string) Option {
 func WithFlatten(b bool) Option {
 	return func(w *Writer) {
 		w.flatten = b
+	}
+}
+
+func WithVertical(b bool) Option {
+	return func(w *Writer) {
+		w.vertical = b
 	}
 }
 
@@ -352,6 +363,10 @@ func (w Writer) writeFields(buf *bytes.Buffer, evt map[string]any, prefix string
 		if m, ok := value.(map[string]any); ok && w.flatten {
 			w.writeFields(buf, m, prefix+key+".")
 		} else {
+			if w.vertical {
+				buf.WriteByte(newline)
+				buf.WriteByte(tab)
+			}
 			buf.WriteString(w.fielder(prefix+key, value))
 		}
 		// Skip space for last key

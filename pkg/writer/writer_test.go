@@ -88,3 +88,26 @@ func TestConsole(t *testing.T) {
 		})
 	}
 }
+
+func TestConsole_Vertical(t *testing.T) {
+	testcases := map[string]any{
+		"message": j{"msg": "message"},
+		"extra":   j{"msg": "message", "foo": "bar", "bin": "baz"},
+	}
+	for name, tc := range testcases {
+		t.Run(name, func(t *testing.T) {
+			buf := new(bytes.Buffer)
+			w := writer.New(
+				writer.WithOut(buf),
+				writer.WithNoColor(),
+				writer.WithVertical(true),
+			)
+			b, err := json.Marshal(tc)
+			require.NoError(t, err)
+			o, err := w.Write(b)
+			require.True(t, o > 0)
+			require.NoError(t, err)
+			golden.Assert(t, buf.Bytes())
+		})
+	}
+}

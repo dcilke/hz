@@ -5,6 +5,7 @@ Application Options:
   -s, --strict  strict mode
   -l, --level=  only output lines at this level
   -f, --flat    flatten output
+  -v, --vert    vertical output
 
 Help Options:
   -h, --help    Show this help message
