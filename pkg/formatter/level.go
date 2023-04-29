@@ -41,14 +41,14 @@ const (
 var _ Formatter = (*Level)(nil)
 
 type Level struct {
-	noColor   bool
+	color     bool
 	formatKey Stringer
 	keys      []string
 }
 
-func NewLevel(noColor bool, formatKey Stringer) Formatter {
+func NewLevel(color bool, formatKey Stringer) Formatter {
 	return &Level{
-		noColor:   noColor,
+		color:     color,
 		formatKey: formatKey,
 		keys:      []string{KeyLevel, KeyLog + "." + KeyLevel},
 	}
@@ -77,25 +77,25 @@ func (f *Level) ExcludeKeys() []string {
 func (f *Level) format(l string) string {
 	switch l {
 	case LevelPanicStr:
-		return Boldrize(DefaultLevelPanicValue, ColorRed, f.noColor)
+		return Boldrize(DefaultLevelPanicValue, ColorRed, f.color)
 	case LevelFatalStr:
-		return Boldrize(DefaultLevelFatalValue, ColorRed, f.noColor)
+		return Boldrize(DefaultLevelFatalValue, ColorRed, f.color)
 	case LevelErrorStr:
-		return Boldrize(DefaultLevelErrorValue, ColorRed, f.noColor)
+		return Boldrize(DefaultLevelErrorValue, ColorRed, f.color)
 	case LevelWarnStr:
-		return Colorize(DefaultLevelWarnValue, ColorRed, f.noColor)
+		return Colorize(DefaultLevelWarnValue, ColorRed, f.color)
 	case LevelInfoStr:
-		return Colorize(DefaultLevelInfoValue, ColorGreen, f.noColor)
+		return Colorize(DefaultLevelInfoValue, ColorGreen, f.color)
 	case LevelDebugStr:
-		return Colorize(DefaultLevelDebugValue, ColorYellow, f.noColor)
+		return Colorize(DefaultLevelDebugValue, ColorYellow, f.color)
 	case LevelTraceStr:
-		return Colorize(DefaultLevelTraceValue, ColorMagenta, f.noColor)
+		return Colorize(DefaultLevelTraceValue, ColorMagenta, f.color)
 	default:
 		ll := strings.ToUpper(l)
 		if len(ll) > 3 {
 			ll = ll[0:3]
 		}
-		return Colorize(ll, ColorBold, f.noColor)
+		return Colorize(ll, ColorBold, f.color)
 	}
 }
 

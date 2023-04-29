@@ -14,14 +14,14 @@ const (
 var _ Formatter = (*Message)(nil)
 
 type Message struct {
-	noColor   bool
+	color     bool
 	formatKey Stringer
 	keys      []string
 }
 
-func NewMessage(noColor bool, formatKey Stringer) Formatter {
+func NewMessage(color bool, formatKey Stringer) Formatter {
 	return &Message{
-		noColor:   noColor,
+		color:     color,
 		formatKey: formatKey,
 		keys:      []string{KeyMessage, KeyMsg},
 	}

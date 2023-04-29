@@ -1,0 +1,5 @@
+12:34:25 TRC yup 
+	log={"level":"trace"} 
+	module=http 
+	request={"headers":["a","b","c"],"nest-a":{"nest-b":{"nest-c":{"nest-d":"nested"}}},"url":"foo"} 
+	sort={"a":{"b":"b","c":"c"},"z":{"x":"x","y":"y"}}

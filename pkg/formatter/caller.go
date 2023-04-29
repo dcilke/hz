@@ -12,14 +12,14 @@ const (
 var _ Formatter = (*Caller)(nil)
 
 type Caller struct {
-	noColor bool
-	keys    []string
+	color bool
+	keys  []string
 }
 
-func NewCaller(noColor bool) Formatter {
+func NewCaller(color bool) Formatter {
 	return &Caller{
-		noColor: noColor,
-		keys:    []string{KeyCaller},
+		color: color,
+		keys:  []string{KeyCaller},
 	}
 }
 
@@ -35,7 +35,7 @@ func (f *Caller) Format(m map[string]any) string {
 					c = rel
 				}
 			}
-			c = Colorize(c, ColorBold, f.noColor) + Colorize(" >", ColorCyan, f.noColor)
+			c = Colorize(c, ColorBold, f.color) + Colorize(" >", ColorCyan, f.color)
 		}
 		return c
 	}

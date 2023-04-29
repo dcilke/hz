@@ -8,12 +8,11 @@ import (
 )
 
 var filecases = []string{"strings", "ndjson", "pretty", "array", "mixed"}
-var levels = []string{"trace", "debug", "info", "warn", "error", "fatal", "panic"}
 
 func TestCLI(t *testing.T) {
 	for _, tc := range filecases {
 		t.Run(tc, func(t *testing.T) {
-			output, err := hz(fn(tc))
+			output, err := hz(fn(tc), "--plain")
 			require.NoError(t, err)
 			golden.Assert(t, output)
 		})
@@ -23,7 +22,7 @@ func TestCLI(t *testing.T) {
 func TestCLI_Strict(t *testing.T) {
 	for _, tc := range filecases {
 		t.Run(tc, func(t *testing.T) {
-			output, err := hz(fn(tc), "--strict")
+			output, err := hz(fn(tc), "--plain", "--strict")
 			require.NoError(t, err)
 			golden.Assert(t, output)
 		})
@@ -32,9 +31,9 @@ func TestCLI_Strict(t *testing.T) {
 
 func TestCLI_Level(t *testing.T) {
 	for _, tc := range filecases {
-		for _, level := range levels {
+		for _, level := range []string{"trace", "debug", "info", "warn", "error", "fatal", "panic"} {
 			t.Run(tc+"/"+level, func(t *testing.T) {
-				output, err := hz(fn(tc), "--level", level)
+				output, err := hz(fn(tc), "--plain", "--level", level)
 				require.NoError(t, err)
 				golden.Assert(t, output)
 			})
@@ -46,7 +45,7 @@ func TestCLI_Help(t *testing.T) {
 	testcases := []string{"--help", "-h"}
 	for _, tc := range testcases {
 		t.Run(tc, func(t *testing.T) {
-			output, err := hz(tc)
+			output, err := hz(tc, "--plain")
 			require.NoError(t, err)
 			golden.Assert(t, output)
 		})
@@ -54,7 +53,19 @@ func TestCLI_Help(t *testing.T) {
 }
 
 func TestCLI_Flat(t *testing.T) {
-	output, err := hz(fn("nested"), "--flat")
+	output, err := hz(fn("nested"), "--plain", "--flat")
+	require.NoError(t, err)
+	golden.Assert(t, output)
+}
+
+func TestCLI_Vert(t *testing.T) {
+	output, err := hz(fn("nested"), "--plain", "--vert")
+	require.NoError(t, err)
+	golden.Assert(t, output)
+}
+
+func TestCLI_Color(t *testing.T) {
+	output, err := hz(fn("mixed"))
 	require.NoError(t, err)
 	golden.Assert(t, output)
 }

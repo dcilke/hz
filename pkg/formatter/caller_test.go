@@ -12,8 +12,8 @@ func TestCaller(t *testing.T) {
 		noColor bool
 		expect  string
 	}{
-		"no-color": {true, "caller >"},
-		"color":    {false, "\x1b[1mcaller\x1b[0m\x1b[36m >\x1b[0m"},
+		"no-color": {false, "caller >"},
+		"color":    {true, "\x1b[1mcaller\x1b[0m\x1b[36m >\x1b[0m"},
 	}
 	for name, tc := range testcases {
 		t.Run(name, func(t *testing.T) {

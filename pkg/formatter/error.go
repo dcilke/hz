@@ -15,14 +15,14 @@ const (
 var _ Formatter = (*Error)(nil)
 
 type Error struct {
-	noColor   bool
+	color     bool
 	formatKey Stringer
 	keys      []string
 }
 
-func NewError(noColor bool, formatKey Stringer) Formatter {
+func NewError(color bool, formatKey Stringer) Formatter {
 	return &Error{
-		noColor:   noColor,
+		color:     color,
 		formatKey: formatKey,
 		keys:      []string{KeyError, KeyErr},
 	}
@@ -57,7 +57,7 @@ func (f *Error) ExcludeKeys() []string {
 func (f *Error) formatValue(i any) string {
 	str, err := strconv.Unquote(fmt.Sprintf("%s", i))
 	if err != nil {
-		return Colorize(fmt.Sprintf("%s", i), ColorRed, f.noColor)
+		return Colorize(fmt.Sprintf("%s", i), ColorRed, f.color)
 	}
-	return Colorize(str, ColorRed, f.noColor)
+	return Colorize(str, ColorRed, f.color)
 }

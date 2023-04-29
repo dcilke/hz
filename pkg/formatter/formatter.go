@@ -19,9 +19,9 @@ type Fielder func(key string, value any) string
 // Stringer stringifies a value
 type Stringer func(any) string
 
-func Key(noColor bool) Stringer {
+func Key(color bool) Stringer {
 	return func(i any) string {
-		return Colorize(fmt.Sprintf("%v=", i), ColorCyan, noColor)
+		return Colorize(fmt.Sprintf("%v=", i), ColorCyan, color)
 	}
 }
 

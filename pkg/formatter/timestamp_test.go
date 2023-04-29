@@ -17,23 +17,23 @@ const cexpect = "\x1b[90m" + expect + "\x1b[0m"
 
 func TestTimestamp(t *testing.T) {
 	testcases := map[string]struct {
-		noColor bool
-		msg     map[string]any
-		expect  string
+		color  bool
+		msg    map[string]any
+		expect string
 	}{
-		"timestamp-no-color":  {true, map[string]any{"timestamp": ts}, expect},
-		"@timestamp-no-color": {true, map[string]any{"@timestamp": ts}, expect},
-		"time-no-color":       {true, map[string]any{"time": ts}, expect},
-		"timestamp-color":     {false, map[string]any{"timestamp": ts}, cexpect},
-		"@timestamp-color":    {false, map[string]any{"@timestamp": ts}, cexpect},
-		"time-color":          {false, map[string]any{"time": ts}, cexpect},
-		"unknown-time":        {true, map[string]any{"time": "unknown"}, "unknown"},
-		"number-time":         {true, map[string]any{"time": jn(1111)}, "00:18:31"},
-		"invalid-time":        {true, map[string]any{"time": jn("unknown")}, "unknown"},
+		"timestamp-no-color":  {false, map[string]any{"timestamp": ts}, expect},
+		"@timestamp-no-color": {false, map[string]any{"@timestamp": ts}, expect},
+		"time-no-color":       {false, map[string]any{"time": ts}, expect},
+		"timestamp-color":     {true, map[string]any{"timestamp": ts}, cexpect},
+		"@timestamp-color":    {true, map[string]any{"@timestamp": ts}, cexpect},
+		"time-color":          {true, map[string]any{"time": ts}, cexpect},
+		"unknown-time":        {false, map[string]any{"time": "unknown"}, "unknown"},
+		"number-time":         {false, map[string]any{"time": jn(1111)}, "00:18:31"},
+		"invalid-time":        {false, map[string]any{"time": jn("unknown")}, "unknown"},
 	}
 	for name, tc := range testcases {
 		t.Run(name, func(t *testing.T) {
-			f := formatter.NewTimestamp(tc.noColor, formatKey, defaultTimeFormat)
+			f := formatter.NewTimestamp(tc.color, formatKey, defaultTimeFormat)
 			str := f.Format(tc.msg)
 			require.Equal(t, tc.expect, str)
 		})

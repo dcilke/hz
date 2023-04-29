@@ -77,7 +77,7 @@ func TestConsole(t *testing.T) {
 			buf := new(bytes.Buffer)
 			w := writer.New(
 				writer.WithOut(buf),
-				writer.WithNoColor(),
+				writer.WithColor(false),
 			)
 			b, err := json.Marshal(tc)
 			require.NoError(t, err)
@@ -99,7 +99,7 @@ func TestConsole_Vertical(t *testing.T) {
 			buf := new(bytes.Buffer)
 			w := writer.New(
 				writer.WithOut(buf),
-				writer.WithNoColor(),
+				writer.WithColor(false),
 				writer.WithVertical(true),
 			)
 			b, err := json.Marshal(tc)

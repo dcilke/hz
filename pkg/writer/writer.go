@@ -56,8 +56,8 @@ type Writer struct {
 	// err is the error destination.
 	err io.Writer
 
-	// noColor disables the colorized output.
-	noColor bool
+	// color disables the colorized output.
+	color bool
 
 	// timeFormat specifies the format for timestamp in output.
 	timeFormat string
@@ -104,9 +104,9 @@ func WithErr(err io.Writer) Option {
 }
 
 // Disable colorized output.
-func WithNoColor() Option {
+func WithColor(b bool) Option {
 	return func(w *Writer) {
-		w.noColor = true
+		w.color = b
 	}
 }
 
@@ -198,24 +198,24 @@ func New(options ...Option) Writer {
 
 	// Set default key formatter
 	if w.formatKey == nil {
-		w.formatKey = formatter.Key(w.noColor)
+		w.formatKey = formatter.Key(w.color)
 	}
 
 	// Ensure default formatters, if not specified in input
 	if _, ok := w.formatter[PinTimestamp]; !ok {
-		w.formatter[PinTimestamp] = formatter.NewTimestamp(w.noColor, w.formatKey, w.timeFormat)
+		w.formatter[PinTimestamp] = formatter.NewTimestamp(w.color, w.formatKey, w.timeFormat)
 	}
 	if _, ok := w.formatter[PinLevel]; !ok {
-		w.formatter[PinLevel] = formatter.NewLevel(w.noColor, w.formatKey)
+		w.formatter[PinLevel] = formatter.NewLevel(w.color, w.formatKey)
 	}
 	if _, ok := w.formatter[PinMessage]; !ok {
-		w.formatter[PinMessage] = formatter.NewMessage(w.noColor, w.formatKey)
+		w.formatter[PinMessage] = formatter.NewMessage(w.color, w.formatKey)
 	}
 	if _, ok := w.formatter[PinCaller]; !ok {
-		w.formatter[PinCaller] = formatter.NewCaller(w.noColor)
+		w.formatter[PinCaller] = formatter.NewCaller(w.color)
 	}
 	if _, ok := w.formatter[PinError]; !ok {
-		w.formatter[PinError] = formatter.NewError(w.noColor, w.formatKey)
+		w.formatter[PinError] = formatter.NewError(w.color, w.formatKey)
 	}
 
 	// Ensure default extractor

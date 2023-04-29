@@ -18,15 +18,15 @@ const (
 	ColorDarkGray = 90
 )
 
-func Colorize(s any, c int, disabled bool) string {
-	if disabled {
-		return fmt.Sprintf("%s", s)
+func Colorize(s any, c int, enabled bool) string {
+	if enabled {
+		return fmt.Sprintf("\x1b[%dm%v\x1b[0m", c, s)
 	}
-	return fmt.Sprintf("\x1b[%dm%v\x1b[0m", c, s)
+	return fmt.Sprintf("%s", s)
 }
 
-func Boldrize(s any, c int, disabled bool) string {
-	return Colorize(Colorize(s, c, disabled), ColorBold, disabled)
+func Boldrize(s any, c int, enabled bool) string {
+	return Colorize(Colorize(s, c, enabled), ColorBold, enabled)
 }
 
 func kvJoin(slice ...string) string {

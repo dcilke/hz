@@ -22,15 +22,15 @@ const (
 var _ Formatter = (*Timestamp)(nil)
 
 type Timestamp struct {
-	noColor    bool
+	color      bool
 	formatKey  Stringer
 	timeFormat string
 	keys       []string
 }
 
-func NewTimestamp(noColor bool, formatKeys Stringer, timeFormat string) Formatter {
+func NewTimestamp(color bool, formatKeys Stringer, timeFormat string) Formatter {
 	return &Timestamp{
-		noColor:    noColor,
+		color:      color,
 		formatKey:  formatKeys,
 		timeFormat: timeFormat,
 		keys:       []string{KeyTimestamp, KeyAtTimestamp, KeyTime},
@@ -53,14 +53,14 @@ func (f *Timestamp) Format(m map[string]any) string {
 
 	if ok, value := gu.SameOrZero(timestamp, attimestamp, time); ok {
 		if value == "" {
-			return Colorize(DefaultTimeValue, ColorDarkGray, f.noColor)
+			return Colorize(DefaultTimeValue, ColorDarkGray, f.color)
 		}
-		return Colorize(value, ColorDarkGray, f.noColor)
+		return Colorize(value, ColorDarkGray, f.color)
 	}
 	return kvJoin(
-		f.formatKey(KeyTimestamp), Colorize(timestamp, ColorDarkGray, f.noColor),
-		f.formatKey(KeyAtTimestamp), Colorize(attimestamp, ColorDarkGray, f.noColor),
-		f.formatKey(KeyTime), Colorize(time, ColorDarkGray, f.noColor),
+		f.formatKey(KeyTimestamp), Colorize(timestamp, ColorDarkGray, f.color),
+		f.formatKey(KeyAtTimestamp), Colorize(attimestamp, ColorDarkGray, f.color),
+		f.formatKey(KeyTime), Colorize(time, ColorDarkGray, f.color),
 	)
 }
 

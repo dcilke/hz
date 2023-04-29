@@ -15,21 +15,21 @@ func formatKey(key any) string {
 
 func TestKey(t *testing.T) {
 	testcases := map[string]struct {
-		noColor bool
-		key     any
-		expect  string
+		color  bool
+		key    any
+		expect string
 	}{
-		"no-color": {true, "key", "key="},
-		"color":    {false, "key", "\x1b[36mkey=\x1b[0m"},
-		"number":   {true, 42, "42="},
-		"byte":     {true, byte(195), "195="},
-		"rune":     {true, rune(195), "195="},
-		"object":   {true, map[string]any{"foo": "bar"}, "map[foo:bar]="},
-		"array":    {true, []string{"foo", "bar"}, "[foo bar]="},
+		"no-color": {false, "key", "key="},
+		"color":    {true, "key", "\x1b[36mkey=\x1b[0m"},
+		"number":   {false, 42, "42="},
+		"byte":     {false, byte(195), "195="},
+		"rune":     {false, rune(195), "195="},
+		"object":   {false, map[string]any{"foo": "bar"}, "map[foo:bar]="},
+		"array":    {false, []string{"foo", "bar"}, "[foo bar]="},
 	}
 	for name, tc := range testcases {
 		t.Run(name, func(t *testing.T) {
-			f := formatter.Key(tc.noColor)
+			f := formatter.Key(tc.color)
 			require.Equal(t, tc.expect, f(tc.key))
 		})
 	}

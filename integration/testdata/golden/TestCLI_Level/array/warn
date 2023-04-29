@@ -1,5 +1,5 @@
 [
-[90m12:34:26[0m [31mWRN[0m warning, something is suspicious [36mlog=[0m{"level":"warn"} [36mmodule=[0mgrpc
-[90m12:34:27[0m [31mWRN[0m this shouldn't happen [36mlog=[0m{"level":"warn"} [36mmodule=[0mgrpc
-[90m12:34:28[0m [31mWRN[0m seriously?!? [36mlog=[0m{"level":"warn"} [36mmodule=[0mgrpc
+12:34:26 WRN warning, something is suspicious log={"level":"warn"} module=grpc
+12:34:27 WRN this shouldn't happen log={"level":"warn"} module=grpc
+12:34:28 WRN seriously?!? log={"level":"warn"} module=grpc
 ]
