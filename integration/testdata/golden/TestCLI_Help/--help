@@ -3,11 +3,11 @@ Usage:
 
 Application Options:
   -l, --level=    only output lines at this level
-  -s, --strict    strict mode
-  -f, --flat      flatten output
+  -s, --strict    exclude non JSON output
+  -f, --flat      flatten objects
   -v, --vertical  vertical output
-  -p, --plain     plain (no color) output
-  -n, --no-pin    don't pin any fields
+  -r, --raw       raw output
+  -n, --no-pin    exclude pinning of fields
 
 Help Options:
   -h, --help      Show this help message

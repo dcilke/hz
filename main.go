@@ -3,28 +3,47 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/dcilke/gu"
 	"github.com/dcilke/heron"
 	"github.com/dcilke/hz/pkg/writer"
 	"github.com/jessevdk/go-flags"
+	"gopkg.in/yaml.v3"
 )
 
 const (
 	newline = "\n"
 )
 
+var cfgPath string
+
+func init() {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		home = "." // fallback to current directory
+	}
+	cfgPath = filepath.Join(home, ".config", "hz", "config.yml")
+}
+
 type Cmd struct {
-	Level    []string `short:"l" long:"level" description:"only output lines at this level"`
-	Strict   bool     `short:"s" long:"strict" description:"strict mode"`
-	Flat     bool     `short:"f" long:"flat" description:"flatten output"`
-	Vertical bool     `short:"v" long:"vertical" description:"vertical output"`
-	Plain    bool     `short:"p" long:"plain" description:"plain (no color) output"`
-	NoPin    bool     `short:"n" long:"no-pin" description:"don't pin any fields"`
+	Level    []string `short:"l" long:"level" description:"only output lines at this level" yaml:"level"`
+	Strict   bool     `short:"s" long:"strict" description:"exclude non JSON output" yaml:"strict"`
+	Flat     bool     `short:"f" long:"flat" description:"flatten objects" yaml:"flat"`
+	Vertical bool     `short:"v" long:"vertical" description:"vertical output" yaml:"vertical"`
+	Raw      bool     `short:"r" long:"raw" description:"raw output" yaml:"plain"`
+	NoPin    bool     `short:"n" long:"no-pin" description:"exclude pinning of fields" yaml:"noPin"`
 }
 
 func main() {
 	var cmd Cmd
+	// read in config file, if it exists
+	err := loadDefaults(&cmd)
+	if err != nil {
+		fmt.Fprint(os.Stderr, fmt.Errorf("WARN: unable to load config: %w", err), "\n")
+	}
+
+	// parse command line flags
 	parser := flags.NewParser(&cmd, flags.HelpFlag|flags.PassDoubleDash)
 	parser.Usage = "[FILE]"
 	filenames, err := parser.Parse()
@@ -45,7 +64,7 @@ func main() {
 		writer.WithLevelFilters(cmd.Level),
 		writer.WithFlatten(cmd.Flat),
 		writer.WithVertical(cmd.Vertical),
-		writer.WithColor(!cmd.Plain),
+		writer.WithColor(!cmd.Raw),
 	}
 
 	if cmd.NoPin {
@@ -96,4 +115,16 @@ func main() {
 	}
 
 	h.Process(os.Stdin)
+}
+
+func loadDefaults(cfg *Cmd) error {
+	if _, err := os.Stat(cfgPath); os.IsNotExist(err) {
+		return nil
+	}
+
+	bytes, err := os.ReadFile(cfgPath)
+	if err != nil {
+		return fmt.Errorf("unable to read config file: %w", err)
+	}
+	return yaml.Unmarshal(bytes, &cfg)
 }
